@@ -1,0 +1,8 @@
+:root, [data-bs-theme=light] {
+  --bs-body-font-family: Acme, sans-serif;
+}
+
+[data-bs-theme=dark] {
+  --bs-body-font-family: 'Nanum Gothic', sans-serif;
+}
+

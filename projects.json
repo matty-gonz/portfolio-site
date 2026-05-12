@@ -1,0 +1,44 @@
+[
+  {
+    "id": "rc-derby",
+    "title": "Remote Control Car",
+    "subtitle": "ASME * RC Derby 2026",
+    "blurb": "Remote controlled car built using custom 3D printed parts and woodcut scraps. Assisted in development of steering system and overall chassis construction.",
+    "description": [
+      "Paragraph 1 * introduce the project and the problem it was solving.",
+      "Paragraph 2 * walk through your specific contribution and design decisions.",
+      "Paragraph 3 * results, what you learned, what you'd do differently."
+    ],
+    "images": [
+      "assets/images/rc-derby/poop.png"
+    ],
+    "skills": [
+      "Vehicle Steering",
+      "CAD",
+      "Electrical Systems",
+      "Team Leadership",
+      "Project Management"
+    ]
+  },
+  {
+    "id": "gnor-submarine",
+    "title": "Autonomous Submarine",
+    "subtitle": "Intro to Engineering * Great Naval Orange Race 2026",
+    "blurb": "Fully autonomous submarine built using custom 3D printed parts alongside readymade RC components. Assisted in propulsion systems and hull design.",
+    "description": [
+      "Paragraph 1 * introduce the project and the problem it was solving.",
+      "Paragraph 2 * walk through your specific contribution and design decisions.",
+      "Paragraph 3 * results, what you learned, what you'd do differently."
+    ],
+    "images": [
+      
+    ],
+    "skills": [
+      "Fluid Propulsion",
+      "CAD",
+      "Electrical Systems",
+      "Team Leadership",
+      "Project Management"
+    ]
+  }
+]

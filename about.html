@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html data-bs-theme="light" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Matthew J. Gonzalez — About</title>
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Acme&amp;display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nanum+Gothic&amp;display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nanum+Gothic+Coding&amp;display=swap">
+    <link rel="stylesheet" href="assets/css/bss-overrides.css">
+    <link rel="stylesheet" href="assets/css/custom.css">
+</head>
+
+<body><canvas id="stars"></canvas>
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container"><a class="navbar-brand" href="index.html">Matthew Julian González</a><button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navMenu" type="button"><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="navMenu">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="index.html">Portfolio</a></li>
+                    <li class="nav-item"><a class="nav-link active" aria-current="page" href="about.html">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <main>
+        <div class="container py-5">
+            <div class="row justify-content-center">
+                <div class="col-12 col-md-10 col-lg-8">
+                    <div class="page-label"><span>About</span></div>
+                    <div class="row align-items-start mb-5 g-4">
+                        <div class="col-12 col-sm-4">
+                            <section class="portrait"><span><img src="assets/img/0C5BECC4-6F59-4D62-BF47-8054DCA583BC_1_105_c.jpeg" width="365" height="487"></span></section>
+                        </div>
+                        <div class="col-12 col-sm-8 col-xxl-8">
+                            <div class="bio-name"><span>Matthew Julian González</span></div>
+                            <div class="bio-role"><span><br>Studying Aerospace Engineering and Art History at the University of Central Florida Burnett Honors College<br><br></span></div>
+                            <p class="bio-text">Second year undergraduate student interested in propulsion systems research and astronautical engineering; seeking opportunities to apply technical and collaborative skills in aerospace internships and research.<br><br></p><p class="mt-3 bio-text">This is my personal website hosting my various projects. Read below for information concerning the technical aspects of the site. Please feel free to contact me using the <a href="contact.html"><code class="link-box">Contact tab</code></a> .</p>
+
+                        </div>
+                    </div>
+                    <hr class="section-divider">
+                    <div class="section-label"><span>About this site</span></div><p class="tech-text">The site is hosted personally on a <a href="https://www.raspberrypi.com"><code class="link-box">Raspberry Pi 3</code></a> running a headless Linux environment via the service <a href="https://nginx.org" target="_blank"><code>nginx</code></a> , and tunneled securely through <a href="https://www.cloudflare.com"><code class="link-box">Cloudflare</code></a> to <strong>matthewjgonzalez.me</strong>. The Pi is accessed remotely through a separate Cloudflare tunnel and ssh (Secure Shell) on any device with a terminal. Projects are managed through a flat <strong>projects.json </strong>file, thus adding a project means adding one JSON entry and one HTML file. The site itself is updated remotely using a <a href="https://github.com"><code class="link-box">GitHub</code></a> webhook.<br><br>The website was visually desgined using <a href="https://bootstrapstudio.io"><code class="link-box">Bootstrap Studio</code></a> with the assistance of Claude AI.</p>
+
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+    <script src="assets/js/main-4.js"></script>
+</body>
+
+</html>

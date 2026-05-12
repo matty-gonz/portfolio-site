@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Matthew J. Gonzalez</title>
+  <link rel="stylesheet" href="../assets/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="../assets/css/custom.css">
+  <link rel="stylesheet" href="../assets/css/styles.css">
+  <style>
+    /* ── GALLERY ──────────────────────────────────────────── */
+    .gallery-img {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      cursor: zoom-in;
+      display: block;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .gallery-img:hover {
+      border-color: var(--border-hover);
+      transform: scale(1.02);
+    }
+
+    /* ── LIGHTBOX ─────────────────────────────────────────── */
+    .lb-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(0,0,0,0.93);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      align-items: center;
+      justify-content: center;
+    }
+    .lb-overlay.open { display: flex; }
+
+    .lb-img {
+      max-width: 88vw;
+      max-height: 86vh;
+      object-fit: contain;
+      border-radius: 4px;
+      user-select: none;
+      animation: lbFade 0.18s ease;
+      display: block;
+    }
+    @keyframes lbFade {
+      from { opacity: 0; transform: scale(0.97); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    .lb-btn {
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: #fff;
+      font-size: 1.6rem;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s;
+      z-index: 10000;
+      line-height: 1;
+    }
+    .lb-btn:hover { background: rgba(126,200,227,0.2); border-color: rgba(126,200,227,0.3); }
+    .lb-prev { left: 1.5rem; }
+    .lb-next { right: 1.5rem; }
+
+    .lb-close {
+      position: fixed;
+      top: 1.25rem;
+      right: 1.5rem;
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.45);
+      font-size: 1.8rem;
+      cursor: pointer;
+      z-index: 10000;
+      transition: color 0.2s;
+      line-height: 1;
+      padding: 0;
+    }
+    .lb-close:hover { color: #fff; }
+
+    .lb-counter {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.22em;
+      color: rgba(255,255,255,0.3);
+      z-index: 10000;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="stars"></canvas>
+
+  <!-- LIGHTBOX -->
+  <div class="lb-overlay" id="lightbox">
+    <button class="lb-close" id="lb-close">✕</button>
+    <button class="lb-btn lb-prev" id="lb-prev">‹</button>
+    <img class="lb-img" id="lb-img" src="" alt="">
+    <button class="lb-btn lb-next" id="lb-next">›</button>
+    <div class="lb-counter" id="lb-counter"></div>
+  </div>
+
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg fixed-top">
+    <div class="container">
+      <a class="navbar-brand" href="../index.html">Matthew J. Gonzalez</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link active" href="../index.html">Portfolio</a></li>
+          <li class="nav-item"><a class="nav-link" href="../about.html">About</a></li>
+          <li class="nav-item"><a class="nav-link" href="../contact.html">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <div class="container py-5">
+      <div class="row justify-content-center">
+        <div class="col-12 col-md-10 col-lg-8">
+          <a class="back-link" href="../index.html">← Back to projects</a>
+          <div class="project-detail-subtitle" id="proj-subtitle"></div>
+          <h1 class="project-detail-title" id="proj-title"></h1>
+          <div class="row g-3 mb-4" id="proj-gallery"></div>
+          <div id="proj-description"></div>
+          <hr class="section-divider">
+          <div class="section-label">Skills</div>
+          <div class="card-skills mt-2" id="proj-skills"></div>
+          <div id="proj-error" style="display:none;">
+            <p class="project-desc">Project not found.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="../assets/bootstrap/js/bootstrap.min.js"></script>
+  <script src="../assets/js/main.js"></script>
+  <script>
+    // ── LIGHTBOX ───────────────────────────────────────────
+    let lbImages = [];
+    let lbIndex  = 0;
+
+    function lbOpen(index) {
+      lbIndex = index;
+      lbShow();
+      document.getElementById('lightbox').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function lbShow() {
+      const img = document.getElementById('lb-img');
+      // force animation replay
+      img.classList.remove('lb-img');
+      void img.offsetWidth;
+      img.classList.add('lb-img');
+      img.src = '../' + lbImages[lbIndex];
+      document.getElementById('lb-counter').textContent =
+        (lbIndex + 1) + ' / ' + lbImages.length;
+    }
+
+    function lbStep(dir) {
+      lbIndex = (lbIndex + dir + lbImages.length) % lbImages.length;
+      lbShow();
+    }
+
+    function lbClose() {
+      document.getElementById('lightbox').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    // button events — attached directly, no inline onclick needed
+    document.getElementById('lb-close').addEventListener('click', lbClose);
+    document.getElementById('lb-prev').addEventListener('click', () => lbStep(-1));
+    document.getElementById('lb-next').addEventListener('click', () => lbStep(1));
+
+    // click outside image to close
+    document.getElementById('lightbox').addEventListener('click', e => {
+      if (e.target.id === 'lightbox' || e.target.id === 'lb-img') {
+        if (e.target.id === 'lightbox') lbClose();
+      }
+    });
+
+    // keyboard navigation
+    document.addEventListener('keydown', e => {
+      if (!document.getElementById('lightbox').classList.contains('open')) return;
+      if (e.key === 'ArrowLeft')  lbStep(-1);
+      if (e.key === 'ArrowRight') lbStep(1);
+      if (e.key === 'Escape')     lbClose();
+    });
+
+    // ── PROJECT LOADER ─────────────────────────────────────
+    const params = new URLSearchParams(window.location.search);
+    const id     = params.get('id');
+
+    if (!id) {
+      document.getElementById('proj-error').style.display = 'block';
+    } else {
+      fetch('../projects.json')
+        .then(r => r.json())
+        .then(projects => {
+          const p = projects.find(x => x.id === id);
+          if (!p) { document.getElementById('proj-error').style.display = 'block'; return; }
+
+          document.title = `Matthew J. Gonzalez — ${p.title}`;
+          document.getElementById('proj-subtitle').textContent = p.subtitle;
+          document.getElementById('proj-title').textContent    = p.title;
+
+          // store images globally for lightbox
+          lbImages = (p.images && p.images.length > 0) ? p.images : [];
+
+          // ── GALLERY ────────────────────────────────────────
+          const gallery = document.getElementById('proj-gallery');
+          if (lbImages.length > 0) {
+            gallery.innerHTML = lbImages.map((src, i) => `
+              <div class="col-12 col-sm-4">
+                <img
+                  src="../${src}"
+                  class="gallery-img"
+                  alt="${p.title} ${i + 1}"
+                  data-index="${i}"
+                  onerror="this.outerHTML='<div class=\\'gallery-cell\\'><span>image ${i+1}</span></div>'"
+                >
+              </div>
+            `).join('');
+
+            // attach lightbox click via event delegation — no inline onclick needed
+            gallery.addEventListener('click', e => {
+              const img = e.target.closest('.gallery-img');
+              if (img) lbOpen(parseInt(img.dataset.index));
+            });
+          } else {
+            gallery.innerHTML = `
+              <div class="col-12 col-sm-4"><div class="gallery-cell"><span>image 1</span></div></div>
+              <div class="col-12 col-sm-4"><div class="gallery-cell"><span>image 2</span></div></div>
+              <div class="col-12 col-sm-4"><div class="gallery-cell"><span>image 3</span></div></div>
+            `;
+          }
+
+          // ── DESCRIPTION ────────────────────────────────────
+          if (p.description && p.description.length > 0) {
+            document.getElementById('proj-description').innerHTML =
+              p.description.map(para => `<p class="project-desc">${para}</p>`).join('');
+          }
+
+          // ── SKILLS ─────────────────────────────────────────
+          if (p.skills && p.skills.length > 0) {
+            document.getElementById('proj-skills').innerHTML =
+              p.skills.map(s => `<span class="skill-tag">${s}</span>`).join('');
+          }
+        })
+        .catch(() => { document.getElementById('proj-error').style.display = 'block'; });
+    }
+  </script>
+</body>
+</html>
