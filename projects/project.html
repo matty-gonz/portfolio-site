@@ -273,10 +273,7 @@
               const btn = document.createElement('button');
               btn.className = 'see-more-btn';
               btn.textContent = `+ ${remaining} more`;
-              btn.addEventListener('click', () => {
-                document.querySelectorAll('.gallery-extra').forEach(el => el.classList.add('visible'));
-                btn.style.display = 'none';
-              });
+              btn.addEventListener('click', () => lbOpen(GALLERY_LIMIT));
               toggleWrap.appendChild(btn);
             }
 
