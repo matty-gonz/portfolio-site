@@ -24,6 +24,29 @@
       transform: scale(1.02);
     }
 
+    .gallery-extra { display: none; }
+    .gallery-extra.visible { display: contents; }
+
+    .see-more-btn {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: var(--accent-dim);
+      border: 1px solid rgba(126,200,227,0.18);
+      border-radius: 3px;
+      padding: 6px 16px;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+      margin-top: 0.75rem;
+      display: inline-block;
+    }
+    .see-more-btn:hover {
+      background: rgba(126,200,227,0.18);
+      border-color: rgba(126,200,227,0.4);
+    }
+
     /* ── LIGHTBOX ─────────────────────────────────────────── */
     .lb-overlay {
       display: none;
@@ -142,8 +165,9 @@
           <a class="back-link" href="../index.html">← Back to projects</a>
           <div class="project-detail-subtitle" id="proj-subtitle"></div>
           <h1 class="project-detail-title" id="proj-title"></h1>
-          <div class="row g-3 mb-4" id="proj-gallery"></div>
-          <div id="proj-description"></div>
+          <div class="row g-3 mb-2" id="proj-gallery"></div>
+          <div id="gallery-toggle-wrap"></div>
+          <div id="proj-description" class="mt-4"></div>
           <hr class="section-divider">
           <div class="section-label">Skills</div>
           <div class="card-skills mt-2" id="proj-skills"></div>
@@ -158,6 +182,8 @@
   <script src="../assets/bootstrap/js/bootstrap.min.js"></script>
   <script src="../assets/js/main.js"></script>
   <script>
+    const GALLERY_LIMIT = 4; // max images shown before "see more"
+
     // ── LIGHTBOX ───────────────────────────────────────────
     let lbImages = [];
     let lbIndex  = 0;
@@ -171,7 +197,6 @@
 
     function lbShow() {
       const img = document.getElementById('lb-img');
-      // force animation replay
       img.classList.remove('lb-img');
       void img.offsetWidth;
       img.classList.add('lb-img');
@@ -190,19 +215,14 @@
       document.body.style.overflow = '';
     }
 
-    // button events — attached directly, no inline onclick needed
     document.getElementById('lb-close').addEventListener('click', lbClose);
     document.getElementById('lb-prev').addEventListener('click', () => lbStep(-1));
     document.getElementById('lb-next').addEventListener('click', () => lbStep(1));
 
-    // click outside image to close
     document.getElementById('lightbox').addEventListener('click', e => {
-      if (e.target.id === 'lightbox' || e.target.id === 'lb-img') {
-        if (e.target.id === 'lightbox') lbClose();
-      }
+      if (e.target.id === 'lightbox') lbClose();
     });
 
-    // keyboard navigation
     document.addEventListener('keydown', e => {
       if (!document.getElementById('lightbox').classList.contains('open')) return;
       if (e.key === 'ArrowLeft')  lbStep(-1);
@@ -227,34 +247,51 @@
           document.getElementById('proj-subtitle').textContent = p.subtitle;
           document.getElementById('proj-title').textContent    = p.title;
 
-          // store images globally for lightbox
           lbImages = (p.images && p.images.length > 0) ? p.images : [];
 
           // ── GALLERY ────────────────────────────────────────
-          const gallery = document.getElementById('proj-gallery');
+          const gallery     = document.getElementById('proj-gallery');
+          const toggleWrap  = document.getElementById('gallery-toggle-wrap');
+
           if (lbImages.length > 0) {
+            // build all image cells, marking extras
             gallery.innerHTML = lbImages.map((src, i) => `
-              <div class="col-12 col-sm-4">
+              <div class="col-6 col-sm-3 ${i >= GALLERY_LIMIT ? 'gallery-extra' : ''}">
                 <img
                   src="../${src}"
                   class="gallery-img"
                   alt="${p.title} ${i + 1}"
                   data-index="${i}"
-                  onerror="this.outerHTML='<div class=\\'gallery-cell\\'><span>image ${i+1}</span></div>'"
+                  onerror="this.parentElement.style.display='none'"
                 >
               </div>
             `).join('');
 
-            // attach lightbox click via event delegation — no inline onclick needed
+            // show "see more" button only if there are extras
+            if (lbImages.length > GALLERY_LIMIT) {
+              const remaining = lbImages.length - GALLERY_LIMIT;
+              const btn = document.createElement('button');
+              btn.className = 'see-more-btn';
+              btn.textContent = `+ ${remaining} more`;
+              btn.addEventListener('click', () => {
+                document.querySelectorAll('.gallery-extra').forEach(el => el.classList.add('visible'));
+                btn.style.display = 'none';
+              });
+              toggleWrap.appendChild(btn);
+            }
+
+            // lightbox via event delegation
             gallery.addEventListener('click', e => {
               const img = e.target.closest('.gallery-img');
               if (img) lbOpen(parseInt(img.dataset.index));
             });
+
           } else {
             gallery.innerHTML = `
-              <div class="col-12 col-sm-4"><div class="gallery-cell"><span>image 1</span></div></div>
-              <div class="col-12 col-sm-4"><div class="gallery-cell"><span>image 2</span></div></div>
-              <div class="col-12 col-sm-4"><div class="gallery-cell"><span>image 3</span></div></div>
+              <div class="col-6 col-sm-3"><div class="gallery-cell"><span>image 1</span></div></div>
+              <div class="col-6 col-sm-3"><div class="gallery-cell"><span>image 2</span></div></div>
+              <div class="col-6 col-sm-3"><div class="gallery-cell"><span>image 3</span></div></div>
+              <div class="col-6 col-sm-3"><div class="gallery-cell"><span>image 4</span></div></div>
             `;
           }
 
