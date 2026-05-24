@@ -50,19 +50,21 @@ main {
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--border);
+  padding-left: 4rem;
+  padding-right: 4rem;
 }
 
 .navbar-brand {
-  font-family: 'Orbitron', monospace;
-  font-size: 1.02rem;
-  font-weight: 600;
-  letter-spacing: 0.22em;
+  font-family: 'Kanit', monospace;
+  font-size: 2.0rem;
+  font-weight: 900;
+  letter-spacing: 0.1rem;
   color: var(--text) !important;
-  text-transform: uppercase;
+  /*text-transform: uppercase;*/
 }
 
 .nav-link {
-  font-family: 'DM Mono', monospace;
+  font-family: 'Kanit', monospace;
   font-size: 0.7rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
