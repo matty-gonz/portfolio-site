@@ -1,0 +1,5 @@
+media/
+Incoming Exports/
+Portfolio.bsdesign
+.DS_Store
+**/.DS_Store
