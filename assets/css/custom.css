@@ -45,18 +45,18 @@ main {
 /* ── NAVBAR ──────────────────────────────────────────────────────── */
 
 .navbar {
-  height: 64px;
+  height: 68px;
   background: rgba(7,9,15,0.9) !important;
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--border);
-  padding-left: 4rem;
-  padding-right: 4rem;
+  padding-left: 3rem;
+  padding-right: 3rem;
 }
 
 .navbar-brand {
   font-family: 'Kanit', monospace;
-  font-size: 2.0rem;
+  font-size: 1.9rem;
   font-weight: 900;
   letter-spacing: 0.1rem;
   color: var(--text) !important;
