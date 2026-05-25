@@ -11,15 +11,18 @@
     ],
 
 
+    "thumbnail": "https://media.matthewjgonzalez.me/rc-derby/Completed Car.JPG",
+
+
     "images": [
-    "https://media.matthewjgonzalez.me/rc-derby/IMG_4529.jpeg",
-    "https://media.matthewjgonzalez.me/rc-derby/IMG_8798.jpeg",
-    "https://media.matthewjgonzalez.me/rc-derby/IMG_9063.jpeg",
-    "https://media.matthewjgonzalez.me/rc-derby/IMG_9117.jpeg",
-    "https://media.matthewjgonzalez.me/rc-derby/IMG_9119.jpeg",
-    "https://media.matthewjgonzalez.me/rc-derby/IMG_9170.jpeg",
-    "https://media.matthewjgonzalez.me/rc-derby/1rc.JPG",
-    "https://media.matthewjgonzalez.me/rc-derby/IMG_0299.JPG"
+    { "src": "https://media.matthewjgonzalez.me/rc-derby/Completed Car.JPG", "caption": "The completed car with all its systems in place." },
+    { "src": "https://media.matthewjgonzalez.me/rc-derby/Team Picture.jpeg", "caption": "From left to right, Matthew Julian González, Philip Pereira, Rogelio Padron Hernandez, Raul Crisppi, Gus." },
+    { "src": "https://media.matthewjgonzalez.me/rc-derby/Initial Sketch.jpeg", "caption": "First sketch of the car after meeting a handful of times." },
+    { "src": "https://media.matthewjgonzalez.me/rc-derby/Motor-ESC Guide.jpeg", "caption": "Advice from ASME's project lead Will on how to properly solder the motor to the ESC." },
+    { "src": "https://media.matthewjgonzalez.me/rc-derby/Servo Guide.jpeg", "caption": "Advice from ASME's project lead Will on how the servo works." },
+    { "src": "https://media.matthewjgonzalez.me/rc-derby/Servo Mount Mockup.JPG", "caption": "Mockup on custom 3D-printed pieces to mount the servo to the car's base." }
+    { "src": "https://media.matthewjgonzalez.me/rc-derby/Steering Mockup.jpeg", "caption": "A more finalized version of the car's steering system. The final steering system closely resembles this mockup." },
+    { "src": "https://media.matthewjgonzalez.me/rc-derby/Various 3D-Printed Parts.jpeg", "caption": "Various pins and collars for different uses across the car." },
   ],
 
 
@@ -45,20 +48,23 @@
     ],
 
 
+    "thumbnail": "https://media.matthewjgonzalez.me/gnor-submarine/Final Print.jpeg",
+
+
     "images": [
-    "https://media.matthewjgonzalez.me/gnor-submarine/IMG_2387A4BA-1083-4730-AD97-6C8F97F4F131.jpeg",
-    "https://media.matthewjgonzalez.me/gnor-submarine/IMG_4229.jpeg",
-    "https://media.matthewjgonzalez.me/gnor-submarine/IMG_5EEBD321-BEC8-423B-90EB-19522B16D2D3.jpeg",
-    "https://media.matthewjgonzalez.me/gnor-submarine/IMG_8785.jpeg",
-    "https://media.matthewjgonzalez.me/gnor-submarine/IMG_9021.jpeg",
-    "https://media.matthewjgonzalez.me/gnor-submarine/IMG_9024.jpeg",
-    "https://media.matthewjgonzalez.me/gnor-submarine/IMG_9025.jpeg",
-    "https://media.matthewjgonzalez.me/gnor-submarine/IMG_9062.jpeg",
-    "https://media.matthewjgonzalez.me/gnor-submarine/IMG_9068.jpeg",
-    "https://media.matthewjgonzalez.me/gnor-submarine/IMG_9069.jpeg",
-    "https://media.matthewjgonzalez.me/gnor-submarine/IMG_9070.jpeg",
-    "https://media.matthewjgonzalez.me/gnor-submarine/IMG_9131.jpeg",
-    "https://media.matthewjgonzalez.me/gnor-submarine/HMS Haggerdy - MK2 Mockup.png"
+    { "src": "https://media.matthewjgonzalez.me/gnor-submarine/Final Print.jpeg", "caption": "The final 3D-printed hull." },
+    { "src": "https://media.matthewjgonzalez.me/gnor-submarine/Team Photo.jpeg", "caption": "From left to right, Tanish Pilli, Felix Lee, Robert Hagerty (EGS Lab Team Leader), Matthew Julian González, Jalol Nazirov. This picture was taken on Great Navel Orange Race 2026 Race Day." },
+    { "src": "https://media.matthewjgonzalez.me/gnor-submarine/First Submarine Sketch.jpeg", "caption": "First rough sketch showing the various planned components in little detail. In this original design, a rudder system and ballast system were proposed, both of which did not make it to the final build." },
+    { "src": "https://media.matthewjgonzalez.me/gnor-submarine/Later Submarine Sketch.jpeg", "caption": "A more refined version of the initial sketch." },
+    { "src": "https://media.matthewjgonzalez.me/gnor-submarine/First Steering System Mockup.jpeg", "caption": "The original proposed rudder system. The later designs were offshoots of this concept." },
+    { "src": "https://media.matthewjgonzalez.me/gnor-submarine/Initial Blind Measurements.jpeg", "caption": "The first proposed measurements for the diameter and length of the cylindrical component of the hull. These measurements ended up being much larger than we could account for and had to be changed, thus the title 'Blind' Measurements." },
+    { "src": "https://media.matthewjgonzalez.me/gnor-submarine/Updated Size Limitations.jpeg", "caption": "Updated" }
+    { "src": "https://media.matthewjgonzalez.me/gnor-submarine/Handheld Prototype - Assembled.jpeg", "caption": "The original submarine design, featuring the old rudder shroud and 'door' concepts scaled down to the size of the palm of ones hand." },
+    { "src": "https://media.matthewjgonzalez.me/gnor-submarine/Handheld Prototype - Cap.jpeg", "caption": "" },
+    { "src": "https://media.matthewjgonzalez.me/gnor-submarine/Handheld Prototype - Iso.jpeg", "caption": "" },
+    { "src": "https://media.matthewjgonzalez.me/gnor-submarine/Hard Work.jpeg", "caption": "Working into the wee hours before race day!" },
+    { "src": "https://media.matthewjgonzalez.me/gnor-submarine/Later Rudder Control System and Rudder Sketches.jpeg", "caption": "A later proposed idea for a rudder control system and 3D printed rudders." },
+    { "src": "https://media.matthewjgonzalez.me/gnor-submarine/Later Steering System Mockup.jpeg", "caption": "A later steering system with measurements and contours more accurate to the submarine's hull design at the time." },
   ],
 
 
