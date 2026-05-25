@@ -4,10 +4,12 @@
     "title": "Remote Control Car",
     "subtitle": "ASME * RC Derby 2026",
     "blurb": "Remote controlled car built using custom 3D printed parts and woodcut scraps. Assisted in development of steering system and overall chassis construction.",
+
+
     "description": [
-      "Paragraph 1 * introduce the project and the problem it was solving.",
-      "Paragraph 2 * walk through your specific contribution and design decisions.",
-      "Paragraph 3 * results, what you learned, what you'd do differently."
+      "This project was done for the American Society of Mechanical Engineers (ASME) student chapter at the University of Central Florida, specifically for their RC Derby, a competition tasking teams with building a remote-controlled car under size, battery, and component restrictions, then racing it around a small track for time.",
+      "The initial design consisted almost entirely of 3D-printed parts for ease of construction and weight. The components would rest on a flat plate, with the electronics (battery, ESC, microcontroller / receiver) in the center, motors in the rear, and a servo-steering system in the front. The steering system was originally a complicated mechanism involving several shafts and gears, along with other concepts that we experimented with. We eventually landed on the steering 'rod' design, where a servo pushes a rigid arm left or right to then rotate a set of wheels in that direction. The motors and electrical components remained unchanged, and did not need much innovation.",
+      "Overall, the car was serviceable for how quickly it came together. Since most of the legwork was refining the steering, and considering we all had little experience with engineering as a whole during this project, I'm glad it worked well enough on race day. Still, the car was not without its issues — the joints that the wheels rested on had some difficulty turning smoothly, and our turning radius suffered as a result. The front wheels often slid instead of rolling, which hurt our speed. Nevertheless, we completed the loop several times and finished with a time of [TIME]. While we could have done better on race day, I am more satisfied with my growth as a result of this project. I became more comfortable with OnShape and the engineering design process, specifically in attempting to model as much as I could on my own. While it was difficult to model the wheel mounts and pins to be the perfect size, the trial-and-error was key to my learning. My teammates helped me better understand soldering and the order in which the electronics operated. Most importantly, this project pushed me to be a more effective leader, as I would often close group meetings with reminders, deadlines, and task assignments for each member.",
     ],
 
 
