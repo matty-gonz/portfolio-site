@@ -204,7 +204,8 @@
       img.classList.remove('lb-img');
       void img.offsetWidth;
       img.classList.add('lb-img');
-      img.src = '../' + lbImages[lbIndex];
+      const s = lbImages[lbIndex];
+      img.src = s.startsWith('http') ? s : '../' + s;
       document.getElementById('lb-counter').textContent =
         (lbIndex + 1) + ' / ' + lbImages.length;
     }
@@ -262,7 +263,7 @@
             gallery.innerHTML = lbImages.map((src, i) => `
               <div class="col-6 col-sm-3 ${i >= GALLERY_LIMIT ? 'gallery-extra' : ''}">
                 <img
-                  src="../${src}"
+                  src="${src.startsWith('http') ? src : '../' + src}"
                   class="gallery-img"
                   alt="${p.title} ${i + 1}"
                   data-index="${i}"
