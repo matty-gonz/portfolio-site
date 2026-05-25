@@ -20,9 +20,9 @@
     { "src": "https://media.matthewjgonzalez.me/rc-derby/Initial Sketch.jpeg", "caption": "First sketch of the car after meeting a handful of times." },
     { "src": "https://media.matthewjgonzalez.me/rc-derby/Motor-ESC Guide.jpeg", "caption": "Advice from ASME's project lead Will on how to properly solder the motor to the ESC." },
     { "src": "https://media.matthewjgonzalez.me/rc-derby/Servo Guide.jpeg", "caption": "Advice from ASME's project lead Will on how the servo works." },
-    { "src": "https://media.matthewjgonzalez.me/rc-derby/Servo Mount Mockup.JPG", "caption": "Mockup on custom 3D-printed pieces to mount the servo to the car's base." }
+    { "src": "https://media.matthewjgonzalez.me/rc-derby/Servo Mount Mockup.JPG", "caption": "Mockup on custom 3D-printed pieces to mount the servo to the car's base." },
     { "src": "https://media.matthewjgonzalez.me/rc-derby/Steering Mockup.jpeg", "caption": "A more finalized version of the car's steering system. The final steering system closely resembles this mockup." },
-    { "src": "https://media.matthewjgonzalez.me/rc-derby/Various 3D-Printed Parts.jpeg", "caption": "Various pins and collars for different uses across the car." },
+    { "src": "https://media.matthewjgonzalez.me/rc-derby/Various 3D-Printed Parts.jpeg", "caption": "Various pins and collars for different uses across the car." }
   ],
 
 
@@ -58,13 +58,13 @@
     { "src": "https://media.matthewjgonzalez.me/gnor-submarine/Later Submarine Sketch.jpeg", "caption": "A more refined version of the initial sketch." },
     { "src": "https://media.matthewjgonzalez.me/gnor-submarine/First Steering System Mockup.jpeg", "caption": "The original proposed rudder system. The later designs were offshoots of this concept." },
     { "src": "https://media.matthewjgonzalez.me/gnor-submarine/Initial Blind Measurements.jpeg", "caption": "The first proposed measurements for the diameter and length of the cylindrical component of the hull. These measurements ended up being much larger than we could account for and had to be changed, thus the title 'Blind' Measurements." },
-    { "src": "https://media.matthewjgonzalez.me/gnor-submarine/Updated Size Limitations.jpeg", "caption": "Updated" }
+    { "src": "https://media.matthewjgonzalez.me/gnor-submarine/Updated Size Limitations.jpeg", "caption": "Updated" },
     { "src": "https://media.matthewjgonzalez.me/gnor-submarine/Handheld Prototype - Assembled.jpeg", "caption": "The original submarine design, featuring the old rudder shroud and 'door' concepts scaled down to the size of the palm of ones hand." },
     { "src": "https://media.matthewjgonzalez.me/gnor-submarine/Handheld Prototype - Cap.jpeg", "caption": "" },
     { "src": "https://media.matthewjgonzalez.me/gnor-submarine/Handheld Prototype - Iso.jpeg", "caption": "" },
     { "src": "https://media.matthewjgonzalez.me/gnor-submarine/Hard Work.jpeg", "caption": "Working into the wee hours before race day!" },
     { "src": "https://media.matthewjgonzalez.me/gnor-submarine/Later Rudder Control System and Rudder Sketches.jpeg", "caption": "A later proposed idea for a rudder control system and 3D printed rudders." },
-    { "src": "https://media.matthewjgonzalez.me/gnor-submarine/Later Steering System Mockup.jpeg", "caption": "A later steering system with measurements and contours more accurate to the submarine's hull design at the time." },
+    { "src": "https://media.matthewjgonzalez.me/gnor-submarine/Later Steering System Mockup.jpeg", "caption": "A later steering system with measurements and contours more accurate to the submarine's hull design at the time." }
   ],
 
 
