@@ -60,14 +60,25 @@
       background: rgba(0,0,0,0.93);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
+      flex-direction: column;
       align-items: center;
       justify-content: center;
+      padding: 3rem 4rem 1.5rem;
     }
     .lb-overlay.open { display: flex; }
 
+    .lb-img-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 0;
+    }
+
     .lb-img {
       max-width: 88vw;
-      max-height: 86vh;
+      max-height: 72vh;
       object-fit: contain;
       border-radius: 4px;
       user-select: none;
@@ -77,6 +88,34 @@
     @keyframes lbFade {
       from { opacity: 0; transform: scale(0.97); }
       to   { opacity: 1; transform: scale(1); }
+    }
+
+    /* caption box below image */
+    .lb-caption-box {
+      width: 100%;
+      max-width: 860px;
+      margin-top: 1rem;
+      padding: 0.75rem 1.1rem;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 4px;
+      min-height: 56px;
+      flex-shrink: 0;
+    }
+
+    .lb-caption-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.2rem;
+    }
+
+    .lb-caption-text {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+      margin: 0;
     }
 
     .lb-btn {
@@ -120,7 +159,7 @@
 
     .lb-counter {
       position: fixed;
-      bottom: 1.5rem;
+      top: 1.4rem;
       left: 50%;
       transform: translateX(-50%);
       font-family: 'DM Mono', monospace;
@@ -140,9 +179,15 @@
   <div class="lb-overlay" id="lightbox">
     <button class="lb-close" id="lb-close">✕</button>
     <button class="lb-btn lb-prev" id="lb-prev">‹</button>
-    <img class="lb-img" id="lb-img" src="" alt="">
     <button class="lb-btn lb-next" id="lb-next">›</button>
     <div class="lb-counter" id="lb-counter"></div>
+    <div class="lb-img-wrap">
+      <img class="lb-img" id="lb-img" src="" alt="">
+    </div>
+    <div class="lb-caption-box">
+      <div class="lb-caption-title" id="lb-caption-title"></div>
+      <p class="lb-caption-text" id="lb-caption-text"></p>
+    </div>
   </div>
 
   <!-- NAVBAR -->
@@ -186,10 +231,10 @@
   <script src="../assets/bootstrap/js/bootstrap.min.js"></script>
   <script src="../assets/js/main-4.js"></script>
   <script>
-    const GALLERY_LIMIT = 4; // max images shown before "see more"
+    const GALLERY_LIMIT = 4;
 
     // ── LIGHTBOX ───────────────────────────────────────────
-    let lbImages = [];
+    let lbImages = []; // array of {src, caption} objects
     let lbIndex  = 0;
 
     function lbOpen(index) {
@@ -200,14 +245,26 @@
     }
 
     function lbShow() {
+      const item = lbImages[lbIndex];
+      const src  = typeof item === 'object' ? item.src : item;
+      const caption = typeof item === 'object' ? (item.caption || '') : '';
+
+      // animate image
       const img = document.getElementById('lb-img');
       img.classList.remove('lb-img');
       void img.offsetWidth;
       img.classList.add('lb-img');
-      const s = lbImages[lbIndex];
-      img.src = s.startsWith('http') ? s : '../' + s;
+      img.src = src;
+
+      // counter
       document.getElementById('lb-counter').textContent =
         (lbIndex + 1) + ' / ' + lbImages.length;
+
+      // caption box
+      const rawName = src.split('/').pop().replace(/\.[^.]+$/, ''); // strip path + extension
+      const title   = rawName;
+      document.getElementById('lb-caption-title').textContent = title;
+      document.getElementById('lb-caption-text').textContent  = caption;
     }
 
     function lbStep(dir) {
@@ -223,11 +280,9 @@
     document.getElementById('lb-close').addEventListener('click', lbClose);
     document.getElementById('lb-prev').addEventListener('click', () => lbStep(-1));
     document.getElementById('lb-next').addEventListener('click', () => lbStep(1));
-
     document.getElementById('lightbox').addEventListener('click', e => {
       if (e.target.id === 'lightbox') lbClose();
     });
-
     document.addEventListener('keydown', e => {
       if (!document.getElementById('lightbox').classList.contains('open')) return;
       if (e.key === 'ArrowLeft')  lbStep(-1);
@@ -252,18 +307,20 @@
           document.getElementById('proj-subtitle').textContent = p.subtitle;
           document.getElementById('proj-title').textContent    = p.title;
 
-          lbImages = (p.images && p.images.length > 0) ? p.images : [];
+          // normalize images — support both string and {src, caption} formats
+          lbImages = (p.images && p.images.length > 0)
+            ? p.images.map(img => typeof img === 'string' ? { src: img, caption: '' } : img)
+            : [];
 
           // ── GALLERY ────────────────────────────────────────
-          const gallery     = document.getElementById('proj-gallery');
-          const toggleWrap  = document.getElementById('gallery-toggle-wrap');
+          const gallery    = document.getElementById('proj-gallery');
+          const toggleWrap = document.getElementById('gallery-toggle-wrap');
 
           if (lbImages.length > 0) {
-            // build all image cells, marking extras
-            gallery.innerHTML = lbImages.map((src, i) => `
+            gallery.innerHTML = lbImages.map((item, i) => `
               <div class="col-6 col-sm-3 ${i >= GALLERY_LIMIT ? 'gallery-extra' : ''}">
                 <img
-                  src="${src.startsWith('http') ? src : '../' + src}"
+                  src="${item.src}"
                   class="gallery-img"
                   alt="${p.title} ${i + 1}"
                   data-index="${i}"
@@ -272,7 +329,6 @@
               </div>
             `).join('');
 
-            // show "see more" button only if there are extras
             if (lbImages.length > GALLERY_LIMIT) {
               const remaining = lbImages.length - GALLERY_LIMIT;
               const btn = document.createElement('button');
@@ -282,7 +338,6 @@
               toggleWrap.appendChild(btn);
             }
 
-            // lightbox via event delegation
             gallery.addEventListener('click', e => {
               const img = e.target.closest('.gallery-img');
               if (img) lbOpen(parseInt(img.dataset.index));

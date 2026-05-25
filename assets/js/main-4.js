@@ -173,10 +173,15 @@ if (projectList) {
     .then(r => r.json())
     .then(projects => {
       projectList.innerHTML = projects.map(p => {
-        // use first image as thumbnail if available, else show placeholder
-        const thumbHTML = (p.images && p.images.length > 0)
-          ? `<img src="${p.images[0]}" class="card-thumb" alt="${p.title}"
-               onerror="this.outerHTML='<div class=\\'card-image-box\\'><span class=\\'img-placeholder\\'>${p.id}</span></div>'">`
+        // thumbnail: use explicit thumbnail field, else first image, else placeholder
+        const thumbSrc = p.thumbnail
+          ? p.thumbnail
+          : (p.images && p.images.length > 0)
+            ? (typeof p.images[0] === 'object' ? p.images[0].src : p.images[0])
+            : null;
+
+        const thumbHTML = thumbSrc
+          ? `<img src="${thumbSrc}" class="card-thumb" alt="${p.title}">`
           : `<div class="card-image-box"><span class="img-placeholder">${p.id}</span></div>`;
 
         return `
