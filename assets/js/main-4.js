@@ -315,6 +315,21 @@ if (projectList) {
   document.getElementById('range-from')?.addEventListener('change', render);
   document.getElementById('range-to')?.addEventListener('change',   render);
 
+  // filter panel toggle
+  const filterToggle = document.getElementById('filter-toggle');
+  const filterPanel  = document.getElementById('filter-panel');
+  filterToggle?.addEventListener('click', e => {
+    e.stopPropagation();
+    const open = filterPanel.classList.toggle('open');
+    filterToggle.classList.toggle('active', open);
+  });
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.filter-dropdown-wrap')) {
+      filterPanel?.classList.remove('open');
+      filterToggle?.classList.remove('active');
+    }
+  });
+
   fetch('projects.json')
     .then(r => r.json())
     .then(projects => {
