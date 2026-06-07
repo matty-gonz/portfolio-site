@@ -703,7 +703,7 @@ a:has(code):hover code {
 /* ── CARD TITLE SIZE ─────────────────────────────────────────────── */
 
 .card-title {
-  font-size: 4.0rem;
+  font-size: 3.75rem;
 }
 
 /* ── NO RESULTS ──────────────────────────────────────────────────── */
