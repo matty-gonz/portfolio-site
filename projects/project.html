@@ -79,8 +79,8 @@
       background: rgba(0,0,0,0.65);
     }
     .lb-video {
-      max-width: 88vw;
-      max-height: 72vh;
+      max-width: 84vw;
+      max-height: 60vh;
       width: auto;
       height: auto;
       border-radius: 4px;
@@ -123,8 +123,9 @@
       -webkit-backdrop-filter: blur(14px);
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      padding: 3rem 4rem 1.5rem;
+      justify-content: flex-start;
+      padding: 1rem 4rem 1.5rem;
+      overflow: hidden;
     }
     .lb-overlay.open { display: flex; }
 
@@ -135,11 +136,12 @@
       justify-content: center;
       width: 100%;
       min-height: 0;
+      padding: 0.5rem 0;
     }
 
     .lb-img {
-      max-width: 88vw;
-      max-height: 72vh;
+      max-width: 84vw;
+      max-height: 60vh;
       object-fit: contain;
       border-radius: 4px;
       user-select: none;
@@ -155,12 +157,12 @@
     .lb-caption-box {
       width: 100%;
       max-width: 860px;
-      margin-top: 1rem;
-      padding: 0.75rem 1.1rem;
+      margin-top: 0.5rem;
+      padding: 0.65rem 1.1rem;
       background: rgba(255,255,255,0.03);
       border: 1px solid rgba(255,255,255,0.07);
       border-radius: 4px;
-      min-height: 56px;
+      min-height: 48px;
       flex-shrink: 0;
     }
 
@@ -220,17 +222,15 @@
 
     /* ── COUNTER + FILMSTRIP ─────────────────────────────── */
     .lb-top-bar {
-      position: fixed;
-      top: 1.1rem;
-      left: 0;
-      right: 0;
-      z-index: 10000;
+      width: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 0.6rem;
+      gap: 0.5rem;
       pointer-events: none;
-      padding: 0 5rem; /* avoid overlap with close button */
+      padding: 0 4rem;
+      flex-shrink: 0;
+      margin-top: 0.25rem;
     }
 
     .lb-counter {
