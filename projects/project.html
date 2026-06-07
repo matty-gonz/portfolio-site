@@ -28,6 +28,30 @@
       transform: scale(1.02);
     }
 
+    /* ── VIDEO ───────────────────────────────────────────── */
+    .gallery-video {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      cursor: zoom-in;
+      display: block;
+      transition: border-color 0.2s, transform 0.2s;
+      background: #000;
+    }
+    .gallery-video:hover {
+      border-color: var(--border-hover);
+      transform: scale(1.02);
+    }
+    .lb-video {
+      max-width: 88vw;
+      max-height: 72vh;
+      border-radius: 4px;
+      display: block;
+      outline: none;
+    }
+
     .gallery-extra { display: none; }
     .gallery-extra.visible { display: contents; }
 
@@ -157,18 +181,79 @@
     }
     .lb-close:hover { color: #fff; }
 
-    .lb-counter {
+    /* ── COUNTER + FILMSTRIP ─────────────────────────────── */
+    .lb-top-bar {
       position: fixed;
-      top: 1.4rem;
+      top: 1.1rem;
       left: 50%;
       transform: translateX(-50%);
-      font-family: 'DM Mono', monospace;
-      font-size: 0.65rem;
-      letter-spacing: 0.22em;
-      color: rgba(255,255,255,0.3);
       z-index: 10000;
-      white-space: nowrap;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.6rem;
+      pointer-events: none;
     }
+
+    .lb-counter {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.22em;
+      color: var(--text);
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 3px;
+      padding: 4px 14px;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    .lb-filmstrip {
+      display: flex;
+      gap: 5px;
+      max-width: 70vw;
+      overflow-x: auto;
+      padding: 2px 4px;
+      scrollbar-width: none;
+      pointer-events: all;
+    }
+    .lb-filmstrip::-webkit-scrollbar { display: none; }
+
+    .lb-thumb {
+      width: 48px;
+      height: 36px;
+      object-fit: cover;
+      border-radius: 2px;
+      border: 2px solid rgba(255,255,255,0.12);
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: border-color 0.15s, opacity 0.15s;
+      opacity: 0.5;
+      background: #111;
+    }
+    .lb-thumb:hover { opacity: 0.85; border-color: rgba(255,255,255,0.3); }
+    .lb-thumb.active { border-color: var(--accent); opacity: 1; }
+
+    .lb-thumb-video {
+      width: 48px;
+      height: 36px;
+      object-fit: cover;
+      border-radius: 2px;
+      border: 2px solid rgba(255,255,255,0.12);
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: border-color 0.15s, opacity 0.15s;
+      opacity: 0.5;
+      background: #111;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.6rem;
+      color: rgba(255,255,255,0.4);
+    }
+    .lb-thumb-video.active { border-color: var(--accent); opacity: 1; }
+    .lb-thumb-video:hover { opacity: 0.85; border-color: rgba(255,255,255,0.3); }
   </style>
 </head>
 <body>
@@ -180,9 +265,13 @@
     <button class="lb-close" id="lb-close">✕</button>
     <button class="lb-btn lb-prev" id="lb-prev">‹</button>
     <button class="lb-btn lb-next" id="lb-next">›</button>
-    <div class="lb-counter" id="lb-counter"></div>
+    <div class="lb-top-bar">
+      <div class="lb-counter" id="lb-counter"></div>
+      <div class="lb-filmstrip" id="lb-filmstrip"></div>
+    </div>
     <div class="lb-img-wrap">
-      <img class="lb-img" id="lb-img" src="" alt="">
+      <img class="lb-img" id="lb-img" src="" alt="" style="display:none;">
+      <video class="lb-video" id="lb-video" controls style="display:none;"></video>
     </div>
     <div class="lb-caption-box">
       <div class="lb-caption-title" id="lb-caption-title"></div>
@@ -237,11 +326,33 @@
     let lbImages = []; // array of {src, caption} objects
     let lbIndex  = 0;
 
+    function buildFilmstrip() {
+      const strip = document.getElementById('lb-filmstrip');
+      strip.innerHTML = lbImages.map((item, i) => {
+        const src = typeof item === 'object' ? item.src : item;
+        if (isVideo(src)) {
+          return `<div class="lb-thumb-video" data-index="${i}" title="Video">▶</div>`;
+        } else {
+          return `<img class="lb-thumb" src="${src}" data-index="${i}" alt="">`;
+        }
+      }).join('');
+
+      strip.addEventListener('click', e => {
+        const el = e.target.closest('[data-index]');
+        if (el) lbOpen(parseInt(el.dataset.index));
+      });
+    }
+
     function lbOpen(index) {
       lbIndex = index;
+      buildFilmstrip();
       lbShow();
       document.getElementById('lightbox').classList.add('open');
       document.body.style.overflow = 'hidden';
+    }
+
+    function isVideo(src) {
+      return /\.(mp4|mov|webm|ogg)$/i.test(src);
     }
 
     function lbShow() {
@@ -249,16 +360,38 @@
       const src  = typeof item === 'object' ? item.src : item;
       const caption = typeof item === 'object' ? (item.caption || '') : '';
 
-      // animate image
-      const img = document.getElementById('lb-img');
-      img.classList.remove('lb-img');
-      void img.offsetWidth;
-      img.classList.add('lb-img');
-      img.src = src;
+      const lbImg   = document.getElementById('lb-img');
+      const lbVid   = document.getElementById('lb-video');
+
+      if (isVideo(src)) {
+        lbImg.style.display = 'none';
+        lbVid.style.display = 'block';
+        lbVid.pause();
+        lbVid.src = src;
+        lbVid.load();
+      } else {
+        lbVid.style.display = 'none';
+        lbVid.pause();
+        lbVid.src = '';
+        lbImg.style.display = 'block';
+        // animate
+        lbImg.classList.remove('lb-img');
+        void lbImg.offsetWidth;
+        lbImg.classList.add('lb-img');
+        lbImg.src = src;
+      }
 
       // counter
       document.getElementById('lb-counter').textContent =
         (lbIndex + 1) + ' / ' + lbImages.length;
+
+      // filmstrip active state
+      document.querySelectorAll('.lb-thumb, .lb-thumb-video').forEach((el, i) => {
+        el.classList.toggle('active', i === lbIndex);
+      });
+      // scroll active thumb into view
+      const activeThumb = document.querySelector('.lb-thumb.active, .lb-thumb-video.active');
+      if (activeThumb) activeThumb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
 
       // caption box
       const rawName = src.split('/').pop().replace(/\.[^.]+$/, ''); // strip path + extension
@@ -273,6 +406,9 @@
     }
 
     function lbClose() {
+      const lbVid = document.getElementById('lb-video');
+      lbVid.pause();
+      lbVid.src = '';
       document.getElementById('lightbox').classList.remove('open');
       document.body.style.overflow = '';
     }
@@ -317,17 +453,31 @@
           const toggleWrap = document.getElementById('gallery-toggle-wrap');
 
           if (lbImages.length > 0) {
-            gallery.innerHTML = lbImages.map((item, i) => `
-              <div class="col-6 col-sm-3 ${i >= GALLERY_LIMIT ? 'gallery-extra' : ''}">
-                <img
-                  src="${item.src}"
-                  class="gallery-img"
-                  alt="${p.title} ${i + 1}"
-                  data-index="${i}"
-                  onerror="this.parentElement.style.display='none'"
-                >
-              </div>
-            `).join('');
+            gallery.innerHTML = lbImages.map((item, i) => {
+              const isVid = /\.(mp4|mov|webm|ogg)$/i.test(item.src);
+              const el = isVid
+                ? `<video class="gallery-video" data-index="${i}" muted loop playsinline preload="metadata">
+                     <source src="${item.src}">
+                   </video>`
+                : `<img
+                     src="${item.src}"
+                     class="gallery-img"
+                     alt="${p.title} ${i + 1}"
+                     data-index="${i}"
+                     onerror="this.parentElement.style.display='none'"
+                   >`;
+              return `<div class="col-6 col-sm-3 ${i >= GALLERY_LIMIT ? 'gallery-extra' : ''}">${el}</div>`;
+            }).join('');
+
+            // autoplay video thumbnails on hover
+            gallery.addEventListener('mouseenter', e => {
+              const v = e.target.closest('.gallery-video');
+              if (v) v.play();
+            }, true);
+            gallery.addEventListener('mouseleave', e => {
+              const v = e.target.closest('.gallery-video');
+              if (v) { v.pause(); v.currentTime = 0; }
+            }, true);
 
             if (lbImages.length > GALLERY_LIMIT) {
               const remaining = lbImages.length - GALLERY_LIMIT;
@@ -339,8 +489,8 @@
             }
 
             gallery.addEventListener('click', e => {
-              const img = e.target.closest('.gallery-img');
-              if (img) lbOpen(parseInt(img.dataset.index));
+              const el = e.target.closest('.gallery-img, .gallery-video');
+              if (el) lbOpen(parseInt(el.dataset.index));
             });
 
           } else {
