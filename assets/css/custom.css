@@ -521,25 +521,19 @@ a:has(code):hover code {
 
 /* ── FILTER BAR ──────────────────────────────────────────────────── */
 
+.page-label {
+  margin-bottom: 1.25rem;
+}
+
 .filter-bar {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.85rem;
   flex-wrap: wrap;
 }
 
-.sort-box {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.4rem 0.85rem;
-  border: 1px solid var(--border);
-  border-radius: 3px;
-  background: var(--surface);
-}
-
-.sort-box-label {
+.filter-sort-label {
   font-family: 'Nanum Gothic Coding', monospace;
   font-size: 0.58rem;
   letter-spacing: 0.16em;
@@ -547,13 +541,14 @@ a:has(code):hover code {
   color: var(--text-dim);
   padding-right: 0.55rem;
   border-right: 1px solid var(--border);
-  white-space: nowrap;
+  line-height: 1;
+  align-self: center;
 }
 
 .filter-sort-group {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.4rem;
 }
 
 .sort-btn {
@@ -670,7 +665,7 @@ a:has(code):hover code {
   justify-content: space-between;
   align-items: flex-start;
   gap: 0.75rem;
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.5rem;
 }
 
 .card-header-left {
@@ -685,7 +680,7 @@ a:has(code):hover code {
 
 .card-date-season {
   font-family: 'Kanit', sans-serif;
-  font-size: 0.95rem;
+  font-size: 1.1rem;
   font-weight: 600;
   color: var(--text);
   line-height: 1.2;
@@ -693,16 +688,22 @@ a:has(code):hover code {
 
 .card-date-months {
   font-family: 'Nanum Gothic', sans-serif;
-  font-size: 0.72rem;
+  font-size: 0.82rem;
   color: var(--text-muted);
   line-height: 1.35;
 }
 
 .card-date-code {
   font-family: 'Nanum Gothic Coding', monospace;
-  font-size: 0.58rem;
+  font-size: 0.62rem;
   letter-spacing: 0.04em;
-  color: var(--text-dim);
+  color: var(--text-muted);
+}
+
+/* ── CARD TITLE SIZE ─────────────────────────────────────────────── */
+
+.card-title {
+  font-size: 1.4rem;
 }
 
 /* ── NO RESULTS ──────────────────────────────────────────────────── */
