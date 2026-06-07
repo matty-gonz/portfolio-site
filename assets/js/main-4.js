@@ -220,9 +220,10 @@ if (projectList) {
   }
 
   function getFiltered(arr) {
-    const yearVal = (document.getElementById('filter-year')?.value  || '').trim();
-    const fromVal = (document.getElementById('range-from')?.value   || '').trim();
-    const toVal   = (document.getElementById('range-to')?.value     || '').trim();
+    const yearVal    = (document.getElementById('filter-year')?.value || '').trim();
+    const fromVal    = (document.getElementById('range-from')?.value  || '').trim();
+    const toVal      = (document.getElementById('range-to')?.value    || '').trim();
+    const activeTags = [...document.querySelectorAll('.tag-filter-btn.active')].map(b => b.dataset.tag);
 
     return arr.filter(p => {
       const ps = p.date_start || '';
@@ -234,6 +235,9 @@ if (projectList) {
       }
       if (fromVal && pe < fromVal) return false;
       if (toVal   && ps > toVal)   return false;
+      if (activeTags.length > 0) {
+        if (!activeTags.some(t => (p.skills || []).includes(t))) return false;
+      }
       return true;
     });
   }
@@ -304,6 +308,21 @@ if (projectList) {
     });
   }
 
+  function buildTagFilter() {
+    const tags = [...new Set(allProjects.flatMap(p => p.skills || []))].sort();
+    const container = document.getElementById('tag-filter');
+    if (!container) return;
+    container.innerHTML = tags.map(t =>
+      `<button class="tag-filter-btn" data-tag="${t}">${t}</button>`
+    ).join('');
+    container.addEventListener('click', e => {
+      const btn = e.target.closest('.tag-filter-btn');
+      if (!btn) return;
+      btn.classList.toggle('active');
+      render();
+    });
+  }
+
   // wire up controls
   document.querySelectorAll('.sort-btn').forEach(btn =>
     btn.addEventListener('click', () => setSort(btn.dataset.sort))
@@ -335,6 +354,7 @@ if (projectList) {
     .then(projects => {
       allProjects = projects;
       populateYearDropdown();
+      buildTagFilter();
       render();
     })
     .catch(err => console.warn('Could not load projects.json:', err));

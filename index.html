@@ -27,11 +27,11 @@
         </div>
     </nav>
     <main>
-        <div class="container-md py-5">
+        <div class="container py-5">
             <div class="row justify-content-center">
                 <div class="col-12">
                     <div class="page-label"><span>Projects</span></div>
-                    <div class="text-center d-flex justify-content-start pt-0 mb-2 pb-3 filter-bar"><span class="filter-sort-label">Sort by</span>
+                    <div class="filter-bar"><span class="filter-sort-label">Sort by</span>
                         <div class="filter-sort-group"><button class="sort-btn" data-sort="custom">Default</button><button class="sort-btn" data-sort="date-asc">Old → New</button><button class="sort-btn" data-sort="date-desc">New → Old</button></div>
                         <div class="filter-dropdown-wrap"><button class="filter-toggle-btn" id="filter-toggle">Filters ▾</button>
                             <div id="filter-panel" class="filter-panel">
@@ -42,6 +42,7 @@
                             </div>
                         </div>
                     </div>
+                    <div id="tag-filter" class="tag-filter-row"></div>
                     <div id="project-list"></div>
                 </div>
             </div>
