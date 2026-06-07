@@ -169,39 +169,158 @@ if (canvas) {
 // ── PROJECT CARD RENDERER ─────────────────────────────────────────
 const projectList = document.getElementById('project-list');
 if (projectList) {
+  let allProjects = [];
+  let currentSort = localStorage.getItem('projectSort') || 'custom';
+
+  const MONTHS_FULL  = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+  function monthName(num) {
+    return MONTHS_FULL[(num || 1) - 1] || '';
+  }
+
+  function getSeason(monthNum) {
+    if (monthNum >= 3 && monthNum <= 5) return 'Spring';
+    if (monthNum >= 6 && monthNum <= 8) return 'Summer';
+    if (monthNum >= 9 && monthNum <= 11) return 'Fall';
+    return 'Winter';
+  }
+
+  function buildDateBlock(p) {
+    if (!p.date_start) return '';
+    const [sy, sm] = p.date_start.split('-').map(Number);
+    const end      = p.date_end || p.date_start;
+    const [ey, em] = end.split('-').map(Number);
+
+    const season = getSeason(em);
+
+    let monthRange;
+    if (sy === ey && sm === em) {
+      monthRange = monthName(sm);
+    } else if (sy === ey) {
+      monthRange = monthName(sm) + ' \u2013 ' + monthName(em);
+    } else {
+      monthRange = monthName(sm) + ' ' + sy + ' \u2013 ' + monthName(em) + ' ' + ey;
+    }
+
+    const code = String(sm).padStart(2,'0') + '/' + sy +
+      (sm !== em || sy !== ey ? ' \u2013 ' + String(em).padStart(2,'0') + '/' + ey : '');
+
+    return `<div class="card-date-block">
+        <div class="card-date-season">${season} ${ey}</div>
+        <div class="card-date-months">${monthRange}</div>
+        <div class="card-date-code">${code}</div>
+      </div>`;
+  }
+
+  function getSorted(mode) {
+    const arr = [...allProjects];
+    if (mode === 'date-asc')  arr.sort((a, b) => (a.date_start || '').localeCompare(b.date_start || ''));
+    if (mode === 'date-desc') arr.sort((a, b) => (b.date_start || '').localeCompare(a.date_start || ''));
+    return arr;
+  }
+
+  function getFiltered(arr) {
+    const yearVal = (document.getElementById('filter-year')?.value  || '').trim();
+    const fromVal = (document.getElementById('range-from')?.value   || '').trim();
+    const toVal   = (document.getElementById('range-to')?.value     || '').trim();
+
+    return arr.filter(p => {
+      const ps = p.date_start || '';
+      const pe = p.date_end   || ps;
+      if (yearVal) {
+        const sy = ps.split('-')[0];
+        const ey = pe.split('-')[0];
+        if (sy > yearVal || ey < yearVal) return false;
+      }
+      if (fromVal && pe < fromVal) return false;
+      if (toVal   && ps > toVal)   return false;
+      return true;
+    });
+  }
+
+  function cardHTML(p) {
+    const thumbSrc = p.thumbnail
+      ? p.thumbnail
+      : (p.images && p.images.length > 0)
+        ? (typeof p.images[0] === 'object' ? p.images[0].src : p.images[0])
+        : null;
+
+    const thumbHTML = thumbSrc
+      ? `<img src="${thumbSrc}" class="card-thumb" alt="${p.title}">`
+      : `<div class="card-image-box"><span class="img-placeholder">${p.id}</span></div>`;
+
+    return `
+      <a class="project-card card h-100" href="projects/project.html?id=${p.id}">
+        <div class="card-body">
+          <div class="card-header-row">
+            <div class="card-header-left">
+              <div class="card-subtitle-label">${p.subtitle}</div>
+            </div>
+            ${buildDateBlock(p)}
+          </div>
+          <h2 class="card-title">${p.title}</h2>
+          ${thumbHTML}
+          <p class="card-blurb">${p.blurb}</p>
+          <div class="card-skills">
+            ${p.skills.map(s => `<span class="skill-tag">${s}</span>`).join('')}
+          </div>
+          <div class="card-cta">
+            <span class="cta-text">View project</span>
+            <span class="cta-arrow">\u2192</span>
+          </div>
+        </div>
+      </a>`;
+  }
+
+  function render() {
+    const filtered = getFiltered(getSorted(currentSort));
+    projectList.innerHTML = filtered.length === 0
+      ? '<p class="no-results">No projects match the current filters.</p>'
+      : `<div class="row g-3 g-lg-4">${filtered.map(p => `<div class="col-12 col-sm-6">${cardHTML(p)}</div>`).join('')}</div>`;
+  }
+
+  function setSort(mode) {
+    currentSort = mode;
+    localStorage.setItem('projectSort', mode);
+    document.querySelectorAll('.sort-btn').forEach(b =>
+      b.classList.toggle('active', b.dataset.sort === mode)
+    );
+    render();
+  }
+
+  function populateYearDropdown() {
+    const years = new Set();
+    allProjects.forEach(p => {
+      if (p.date_start) years.add(p.date_start.split('-')[0]);
+      if (p.date_end)   years.add(p.date_end.split('-')[0]);
+    });
+    const select = document.getElementById('filter-year');
+    if (!select) return;
+    [...years].sort().forEach(y => {
+      const opt = document.createElement('option');
+      opt.value = y;
+      opt.textContent = y;
+      select.appendChild(opt);
+    });
+  }
+
+  // wire up controls
+  document.querySelectorAll('.sort-btn').forEach(btn =>
+    btn.addEventListener('click', () => setSort(btn.dataset.sort))
+  );
+  document.querySelectorAll('.sort-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.sort === currentSort)
+  );
+  document.getElementById('filter-year')?.addEventListener('change', render);
+  document.getElementById('range-from')?.addEventListener('change', render);
+  document.getElementById('range-to')?.addEventListener('change',   render);
+
   fetch('projects.json')
     .then(r => r.json())
     .then(projects => {
-      projectList.innerHTML = projects.map(p => {
-        // thumbnail: use explicit thumbnail field, else first image, else placeholder
-        const thumbSrc = p.thumbnail
-          ? p.thumbnail
-          : (p.images && p.images.length > 0)
-            ? (typeof p.images[0] === 'object' ? p.images[0].src : p.images[0])
-            : null;
-
-        const thumbHTML = thumbSrc
-          ? `<img src="${thumbSrc}" class="card-thumb" alt="${p.title}">`
-          : `<div class="card-image-box"><span class="img-placeholder">${p.id}</span></div>`;
-
-        return `
-          <a class="project-card card" href="projects/project.html?id=${p.id}">
-            <div class="card-body">
-              <div class="card-subtitle-label">${p.subtitle}</div>
-              <h2 class="card-title">${p.title}</h2>
-              ${thumbHTML}
-              <p class="card-blurb">${p.blurb}</p>
-              <div class="card-skills">
-                ${p.skills.map(s => `<span class="skill-tag">${s}</span>`).join('')}
-              </div>
-              <div class="card-cta">
-                <span class="cta-text">View project</span>
-                <span class="cta-arrow">→</span>
-              </div>
-            </div>
-          </a>
-        `;
-      }).join('');
+      allProjects = projects;
+      populateYearDropdown();
+      render();
     })
     .catch(err => console.warn('Could not load projects.json:', err));
 }

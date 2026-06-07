@@ -29,8 +29,17 @@
     <main>
         <div class="container py-5">
             <div class="row justify-content-center">
-                <div class="col-12 col-md-10 col-lg-8">
+                <div class="col-12">
                     <div class="page-label"><span>Projects</span></div>
+                    <div class="filter-bar">
+                        <div class="filter-section"><span class="filter-label">Sort</span><button class="sort-btn" data-sort="custom">Custom</button><button class="sort-btn" data-sort="date-asc">Old → New</button><button class="sort-btn" data-sort="date-desc">New → Old</button></div>
+                        <div class="filter-divider"></div>
+                        <div class="filter-section"><span class="filter-label">Year</span><select class="filter-select" id="filter-year">
+                                <option value="">All</option>
+                            </select></div>
+                        <div class="filter-divider"></div>
+                        <div class="filter-section"><span class="filter-label">Range</span><input type="month" class="filter-month-input" id="range-from"><span class="filter-range-sep">–</span><input type="month" class="filter-month-input" id="range-to"></div>
+                    </div>
                     <div id="project-list"></div>
                 </div>
             </div>
