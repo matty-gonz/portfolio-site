@@ -29,27 +29,64 @@
     }
 
     /* ── VIDEO ───────────────────────────────────────────── */
-    .gallery-video {
+    .gallery-video-wrap {
+      position: relative;
       width: 100%;
       aspect-ratio: 4 / 3;
+      cursor: zoom-in;
+    }
+    .gallery-video {
+      width: 100%;
+      height: 100%;
       object-fit: cover;
       border-radius: 4px;
       border: 1px solid var(--border);
-      cursor: zoom-in;
       display: block;
       transition: border-color 0.2s, transform 0.2s;
       background: #000;
     }
-    .gallery-video:hover {
+    .gallery-video-wrap:hover .gallery-video {
       border-color: var(--border-hover);
       transform: scale(1.02);
+    }
+    .gallery-play-icon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 32px;
+      height: 32px;
+      background: rgba(0,0,0,0.45);
+      border: 1.5px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      transition: background 0.2s;
+    }
+    .gallery-play-icon::after {
+      content: '';
+      display: block;
+      width: 0;
+      height: 0;
+      border-top: 7px solid transparent;
+      border-bottom: 7px solid transparent;
+      border-left: 11px solid rgba(255,255,255,0.7);
+      margin-left: 2px;
+    }
+    .gallery-video-wrap:hover .gallery-play-icon {
+      background: rgba(0,0,0,0.65);
     }
     .lb-video {
       max-width: 88vw;
       max-height: 72vh;
+      width: auto;
+      height: auto;
       border-radius: 4px;
       display: block;
       outline: none;
+      background: #000;
     }
 
     .gallery-extra { display: none; }
@@ -185,14 +222,15 @@
     .lb-top-bar {
       position: fixed;
       top: 1.1rem;
-      left: 50%;
-      transform: translateX(-50%);
+      left: 0;
+      right: 0;
       z-index: 10000;
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 0.6rem;
       pointer-events: none;
+      padding: 0 5rem; /* avoid overlap with close button */
     }
 
     .lb-counter {
@@ -212,34 +250,36 @@
     .lb-filmstrip {
       display: flex;
       gap: 5px;
-      max-width: 70vw;
+      max-width: 80vw;
       overflow-x: auto;
-      padding: 2px 4px;
+      padding: 3px 4px;
       scrollbar-width: none;
       pointer-events: all;
+      align-items: center;
     }
     .lb-filmstrip::-webkit-scrollbar { display: none; }
 
     .lb-thumb {
-      width: 48px;
-      height: 36px;
+      width: 56px;
+      height: 42px;
       object-fit: cover;
-      border-radius: 2px;
+      object-position: center;
+      border-radius: 3px;
       border: 2px solid rgba(255,255,255,0.12);
       cursor: pointer;
       flex-shrink: 0;
       transition: border-color 0.15s, opacity 0.15s;
       opacity: 0.5;
       background: #111;
+      display: block;
     }
     .lb-thumb:hover { opacity: 0.85; border-color: rgba(255,255,255,0.3); }
     .lb-thumb.active { border-color: var(--accent); opacity: 1; }
 
     .lb-thumb-video {
-      width: 48px;
-      height: 36px;
-      object-fit: cover;
-      border-radius: 2px;
+      width: 56px;
+      height: 42px;
+      border-radius: 3px;
       border: 2px solid rgba(255,255,255,0.12);
       cursor: pointer;
       flex-shrink: 0;
@@ -249,8 +289,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.6rem;
-      color: rgba(255,255,255,0.4);
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.5);
     }
     .lb-thumb-video.active { border-color: var(--accent); opacity: 1; }
     .lb-thumb-video:hover { opacity: 0.85; border-color: rgba(255,255,255,0.3); }
@@ -456,9 +496,12 @@
             gallery.innerHTML = lbImages.map((item, i) => {
               const isVid = /\.(mp4|mov|webm|ogg)$/i.test(item.src);
               const el = isVid
-                ? `<video class="gallery-video" data-index="${i}" muted loop playsinline preload="metadata">
-                     <source src="${item.src}">
-                   </video>`
+                ? `<div class="gallery-video-wrap" data-index="${i}">
+                     <video class="gallery-video" muted loop playsinline preload="metadata">
+                       <source src="${item.src}">
+                     </video>
+                     <div class="gallery-play-icon"></div>
+                   </div>`
                 : `<img
                      src="${item.src}"
                      class="gallery-img"
@@ -471,12 +514,12 @@
 
             // autoplay video thumbnails on hover
             gallery.addEventListener('mouseenter', e => {
-              const v = e.target.closest('.gallery-video');
-              if (v) v.play();
+              const wrap = e.target.closest('.gallery-video-wrap');
+              if (wrap) wrap.querySelector('video').play();
             }, true);
             gallery.addEventListener('mouseleave', e => {
-              const v = e.target.closest('.gallery-video');
-              if (v) { v.pause(); v.currentTime = 0; }
+              const wrap = e.target.closest('.gallery-video-wrap');
+              if (wrap) { const v = wrap.querySelector('video'); v.pause(); v.currentTime = 0; }
             }, true);
 
             if (lbImages.length > GALLERY_LIMIT) {
@@ -489,7 +532,7 @@
             }
 
             gallery.addEventListener('click', e => {
-              const el = e.target.closest('.gallery-img, .gallery-video');
+              const el = e.target.closest('.gallery-img, .gallery-video-wrap');
               if (el) lbOpen(parseInt(el.dataset.index));
             });
 
