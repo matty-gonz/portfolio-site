@@ -30,6 +30,9 @@
   ],
 
 
+    "date_start": "2026-01",
+    "date_end":   "2026-04",
+
     "skills": [
       "Vehicle Steering",
       "CAD",
@@ -74,6 +77,9 @@
     { "src": "https://media.matthewjgonzalez.me/gnor-submarine/Later Steering System Mockup.jpeg", "caption": "A later steering system with measurements and contours more accurate to the submarine's hull design at the time." }
   ],
 
+
+    "date_start": "2026-01",
+    "date_end":   "2026-04",
 
     "skills": [
       "Fluid Propulsion",
