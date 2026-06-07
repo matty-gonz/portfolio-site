@@ -366,7 +366,25 @@
     let lbImages = []; // array of {src, caption} objects
     let lbIndex  = 0;
 
+    // preload the images immediately before and after current index
+    const preloadCache = new Set();
+    function preloadAdjacent(index) {
+      const neighbors = [index - 1, index + 1];
+      for (const i of neighbors) {
+        if (i < 0 || i >= lbImages.length) continue;
+        const item = lbImages[i];
+        const src  = typeof item === 'object' ? item.src : item;
+        if (isVideo(src) || preloadCache.has(src)) continue;
+        preloadCache.add(src);
+        const img = new Image();
+        img.src = src;
+      }
+    }
+
+    let filmstripBuilt = false;
+
     function buildFilmstrip() {
+      if (filmstripBuilt) return; // only build once
       const strip = document.getElementById('lb-filmstrip');
       strip.innerHTML = lbImages.map((item, i) => {
         const src = typeof item === 'object' ? item.src : item;
@@ -381,6 +399,8 @@
         const el = e.target.closest('[data-index]');
         if (el) lbOpen(parseInt(el.dataset.index));
       });
+
+      filmstripBuilt = true;
     }
 
     function lbOpen(index) {
@@ -433,6 +453,9 @@
       const activeThumb = document.querySelector('.lb-thumb.active, .lb-thumb-video.active');
       if (activeThumb) activeThumb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
 
+      // preload prev and next images silently
+      preloadAdjacent(lbIndex);
+
       // caption box
       const rawName = src.split('/').pop().replace(/\.[^.]+$/, ''); // strip path + extension
       const title   = rawName;
@@ -451,6 +474,7 @@
       lbVid.src = '';
       document.getElementById('lightbox').classList.remove('open');
       document.body.style.overflow = '';
+      filmstripBuilt = false; // reset so it rebuilds fresh if reopened on a different project
     }
 
     document.getElementById('lb-close').addEventListener('click', lbClose);
@@ -473,8 +497,15 @@
     if (!id) {
       document.getElementById('proj-error').style.display = 'block';
     } else {
-      fetch('../projects.json')
-        .then(r => r.json())
+      // session cache for projects.json — fetched once per tab
+      const cachedProjects = sessionStorage.getItem('projectsCache');
+      const projectsPromise = cachedProjects
+        ? Promise.resolve(JSON.parse(cachedProjects))
+        : fetch('../projects.json')
+            .then(r => r.json())
+            .then(data => { sessionStorage.setItem('projectsCache', JSON.stringify(data)); return data; });
+
+      projectsPromise
         .then(projects => {
           const p = projects.find(x => x.id === id);
           if (!p) { document.getElementById('proj-error').style.display = 'block'; return; }
