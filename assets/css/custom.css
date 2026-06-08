@@ -103,7 +103,7 @@ main {
   letter-spacing: 0.28em;
   color: var(--text-dim);
   text-transform: uppercase;
-  margin-bottom: 2.5rem;
+  margin-bottom: 1.25rem;
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -165,7 +165,7 @@ main {
 
 .card-title {
   font-family: 'Syne', sans-serif;
-  font-size: 1.15rem;
+  font-size: 1.4rem;
   font-weight: 600;
   color: var(--text);
   margin-bottom: 1.1rem;
@@ -519,20 +519,7 @@ a:has(code):hover code {
   margin-bottom: 1.1rem;
 }
 
-/* ── TAG FILTER (inside Filters dropdown) ────────────────────────── */
-
-.filter-row-tags {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
-}
-
-.tag-filter-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  flex: 1;
-}
+/* ── TAG FILTER ──────────────────────────────────────────────────── */
 
 .tag-filter-btn {
   font-family: 'Nanum Gothic Coding', monospace;
@@ -560,13 +547,207 @@ a:has(code):hover code {
   border-color: rgba(126,200,227,0.35);
 }
 
-/* ── PORTFOLIO TWEAKS (edit these to taste) ──────────────────────── */
+/* ── FILTER BAR ──────────────────────────────────────────────────── */
 
-.card-title {
-  font-size: 1.4rem;
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+  flex-wrap: wrap;
 }
 
-.page-label {
-  margin-bottom: 1.25rem;
+.filter-sort-label {
+  font-family: 'Nanum Gothic Coding', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  padding-right: 0.55rem;
+  border-right: 1px solid var(--border);
+  line-height: 1;
+  align-self: center;
+}
+
+.filter-sort-group {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.sort-btn {
+  font-family: 'Nanum Gothic Coding', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  padding: 5px 13px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.sort-btn:hover {
+  background: var(--accent-dim);
+  border-color: var(--border-hover);
+  color: var(--accent);
+}
+
+.sort-btn.active {
+  background: var(--accent-dim);
+  border-color: rgba(126,200,227,0.35);
+  color: var(--accent);
+}
+
+.filter-dropdown-wrap {
+  position: relative;
+}
+
+.filter-toggle-btn {
+  font-family: 'Nanum Gothic Coding', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 5px 13px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.filter-toggle-btn:hover, .filter-toggle-btn.active {
+  background: var(--accent-dim);
+  border-color: var(--border-hover);
+  color: var(--accent);
+}
+
+.filter-panel {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  background: #0d1017;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.8rem 1rem;
+  min-width: 260px;
+  z-index: 200;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.filter-panel.open {
+  display: flex;
+}
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filter-label {
+  font-family: 'Nanum Gothic Coding', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  min-width: 38px;
+}
+
+.filter-select, .filter-month-input {
+  font-family: 'Nanum Gothic Coding', monospace;
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 3px 7px;
+  outline: none;
+  color-scheme: dark;
+  transition: border-color 0.2s;
+}
+
+.filter-select:focus, .filter-month-input:focus {
+  border-color: var(--border-hover);
+}
+
+.filter-sep {
+  color: var(--text-dim);
+  font-family: 'Nanum Gothic Coding', monospace;
+  font-size: 0.7rem;
+}
+
+/* ── TAG ROW (collapsible, below filter bar) ─────────────────────── */
+
+.tag-filter-row {
+  display: none;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.85rem;
+}
+
+.tag-filter-row.open {
+  display: flex;
+}
+
+/* ── CARD DATE BLOCK ─────────────────────────────────────────────── */
+
+.card-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: -0.5rem;
+}
+
+.card-header-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.card-date-block {
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.card-date-season {
+  font-family: 'Kanit', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.card-date-months {
+  font-family: 'Nanum Gothic', sans-serif;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+.card-date-code {
+  font-family: 'Nanum Gothic Coding', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+/* ── MISC ────────────────────────────────────────────────────────── */
+
+.no-results {
+  font-family: 'Nanum Gothic Coding', monospace;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.row > [class*="col"] > .project-card.card {
+  margin-bottom: 0;
 }
 
