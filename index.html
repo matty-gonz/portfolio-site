@@ -29,7 +29,7 @@
     <main>
         <div class="container py-5">
             <div class="row justify-content-center">
-                <div class="col-12">
+                <div class="col-12 px-3 px-md-5">
                     <div class="page-label"><span>Projects</span></div>
                     <div class="filter-bar"><span class="filter-sort-label">Sort by</span>
                         <div class="filter-sort-group"><button class="sort-btn" data-sort="custom">Default</button><button class="sort-btn" data-sort="date-asc">Old → New</button><button class="sort-btn" data-sort="date-desc">New → Old</button></div>
@@ -39,12 +39,10 @@
                                         <option value="">All</option>
                                     </select></div>
                                 <div class="filter-row"><span class="filter-label">Range</span><input type="month" class="filter-month-input" id="range-from"><span class="filter-sep">–</span><input type="month" class="filter-month-input" id="range-to"></div>
-                                <div class="filter-row-tags"><span class="filter-label">Tags</span>
-                                    <div id="tag-filter" class="tag-filter-row"></div>
-                                </div>
                             </div>
-                        </div>
+                        </div><button class="filter-toggle-btn" id="tag-toggle">Tags ▾</button>
                     </div>
+                    <div id="tag-filter" class="tag-filter-row"></div>
                     <div id="project-list"></div>
                 </div>
             </div>

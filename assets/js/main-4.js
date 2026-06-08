@@ -349,6 +349,14 @@ if (projectList) {
     }
   });
 
+  // tag row toggle
+  const tagToggle = document.getElementById('tag-toggle');
+  const tagRow    = document.getElementById('tag-filter');
+  tagToggle?.addEventListener('click', () => {
+    const open = tagRow.classList.toggle('open');
+    tagToggle.classList.toggle('active', open);
+  });
+
   fetch('projects.json')
     .then(r => r.json())
     .then(projects => {
