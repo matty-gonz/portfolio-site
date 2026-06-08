@@ -560,3 +560,13 @@ a:has(code):hover code {
   border-color: rgba(126,200,227,0.35);
 }
 
+/* ── PORTFOLIO TWEAKS (edit these to taste) ──────────────────────── */
+
+.card-title {
+  font-size: 1.4rem;
+}
+
+.page-label {
+  margin-bottom: 1.25rem;
+}
+
