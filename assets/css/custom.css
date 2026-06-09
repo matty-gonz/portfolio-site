@@ -753,16 +753,18 @@ a:has(code):hover code {
 
 /* ── MOBILE FIXES (≤576px only) ─────────────────────────────────── */
 
-/* 1. Navbar: reduce side padding so brand name fits */
+/* 1. Navbar: sticky so expanded menu pushes content down naturally */
 
 @media (max-width: 576px) {
   .navbar {
+    position: sticky;
+    top: 0;
     padding-left: 1rem;
     padding-right: 1rem;
   }
 }
 
-/* Shrink brand font slightly so full name fits on one line */
+/* Shrink brand font so full name fits on one line */
 
 @media (max-width: 576px) {
   .navbar-brand {
@@ -770,27 +772,19 @@ a:has(code):hover code {
   }
 }
 
-/* 2. Main: add enough top clearance for the navbar */
+/* 2. Main: no extra top padding — sticky navbar is in document flow */
 
 @media (max-width: 576px) {
   main {
-    padding-top: 72px;
+    padding-top: 0;
   }
 }
 
-/* 3. Card header: stack date block below subtitle on narrow screens */
+/* 3. Card header: keep subtitle+date side by side, just fix negative margin */
 
 @media (max-width: 576px) {
   .card-header-row {
-    flex-direction: column;
-    gap: 0.25rem;
-    margin-bottom: 0;
-  }
-}
-
-@media (max-width: 576px) {
-  .card-date-block {
-    text-align: left;
+    margin-bottom: 0.35rem;
   }
 }
 
