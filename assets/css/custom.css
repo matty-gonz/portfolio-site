@@ -753,12 +753,11 @@ a:has(code):hover code {
 
 /* ── MOBILE FIXES (≤576px only) ─────────────────────────────────── */
 
-/* 1. Navbar: sticky so expanded menu pushes content down naturally */
+/* Navbar stays fixed — name never moves */
 
 @media (max-width: 576px) {
   .navbar {
-    position: sticky;
-    top: 0;
+    position: fixed;
     padding-left: 1rem;
     padding-right: 1rem;
   }
@@ -772,15 +771,15 @@ a:has(code):hover code {
   }
 }
 
-/* 2. Main: no extra top padding — sticky navbar is in document flow */
+/* Base clearance for closed navbar height */
 
 @media (max-width: 576px) {
   main {
-    padding-top: 0;
+    padding-top: 72px;
   }
 }
 
-/* 3. Card header: keep subtitle+date side by side, just fix negative margin */
+/* Card header: keep side-by-side layout, neutralize negative margin */
 
 @media (max-width: 576px) {
   .card-header-row {

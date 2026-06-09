@@ -166,6 +166,25 @@ if (canvas) {
   requestAnimationFrame(loop);
 }
 
+// ── MOBILE NAV: push content down when menu opens ─────────────────
+(function () {
+  const navMenu = document.getElementById('navMenu');
+  const navbar  = document.querySelector('.navbar');
+  const mainEl  = document.querySelector('main');
+  if (!navMenu || !navbar || !mainEl) return;
+
+  navMenu.addEventListener('shown.bs.collapse', () => {
+    if (window.innerWidth <= 576)
+      mainEl.style.paddingTop = navbar.offsetHeight + 'px';
+  });
+  navMenu.addEventListener('hidden.bs.collapse', () => {
+    mainEl.style.paddingTop = '';
+  });
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 576) mainEl.style.paddingTop = '';
+  });
+})();
+
 // ── PROJECT CARD RENDERER ─────────────────────────────────────────
 const projectList = document.getElementById('project-list');
 if (projectList) {
