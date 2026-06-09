@@ -751,3 +751,46 @@ a:has(code):hover code {
   margin-bottom: 0;
 }
 
+/* ── MOBILE FIXES (≤576px only) ─────────────────────────────────── */
+
+/* 1. Navbar: reduce side padding so brand name fits */
+
+@media (max-width: 576px) {
+  .navbar {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+/* Shrink brand font slightly so full name fits on one line */
+
+@media (max-width: 576px) {
+  .navbar-brand {
+    font-size: 1.35rem;
+  }
+}
+
+/* 2. Main: add enough top clearance for the navbar */
+
+@media (max-width: 576px) {
+  main {
+    padding-top: 72px;
+  }
+}
+
+/* 3. Card header: stack date block below subtitle on narrow screens */
+
+@media (max-width: 576px) {
+  .card-header-row {
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-bottom: 0;
+  }
+}
+
+@media (max-width: 576px) {
+  .card-date-block {
+    text-align: left;
+  }
+}
+
