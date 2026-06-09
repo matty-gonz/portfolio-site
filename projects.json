@@ -34,12 +34,17 @@
     "date_end":   "2026-04",
 
     "skills": [
-      "Vehicle Steering",
-      "CAD",
-      "Electrical Systems",
-      "Team Leadership",
-      "Project Management"
-    ]
+  "CAD",
+  "3D Printing",
+  "Sketching",
+  "Prototyping",
+  "Chassis Design",
+  "Servo Mechanisms",
+  "Vehicle Steering",
+  "Electrical Systems",
+  "Team Leadership",
+  "Project Management"
+]
 
 
   },
@@ -82,12 +87,17 @@
     "date_end":   "2026-04",
 
     "skills": [
-      "Fluid Propulsion",
-      "CAD",
-      "Electrical Systems",
-      "Team Leadership",
-      "Project Management"
-    ]
+  "CAD",
+  "3D Printing",
+  "Sketching",
+  "Prototyping",
+  "Hull Design",
+  "Waterproofing",
+  "Fluid Propulsion",
+  "Electrical Systems",
+  "Team Leadership",
+  "Project Management"
+]
 
 
   }
