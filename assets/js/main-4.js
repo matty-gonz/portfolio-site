@@ -173,13 +173,19 @@ if (canvas) {
   const mainEl  = document.querySelector('main');
   if (!navMenu || !navbar || !mainEl) return;
 
-  navMenu.addEventListener('shown.bs.collapse', () => {
-    if (window.innerWidth <= 576)
-      mainEl.style.paddingTop = navbar.offsetHeight + 'px';
+  const observer = new MutationObserver(() => {
+    if (window.innerWidth > 576) return;
+    if (navMenu.classList.contains('show')) {
+      setTimeout(() => {
+        mainEl.style.paddingTop = navbar.offsetHeight + 'px';
+      }, 380);
+    } else {
+      mainEl.style.paddingTop = '';
+    }
   });
-  navMenu.addEventListener('hidden.bs.collapse', () => {
-    mainEl.style.paddingTop = '';
-  });
+
+  observer.observe(navMenu, { attributes: true, attributeFilter: ['class'] });
+
   window.addEventListener('resize', () => {
     if (window.innerWidth > 576) mainEl.style.paddingTop = '';
   });
