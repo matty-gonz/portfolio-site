@@ -382,13 +382,37 @@ if (projectList) {
     tagToggle.classList.toggle('active', open);
   });
 
-  fetch('projects.json')
-    .then(r => r.json())
+  function loadError() {
+    projectList.innerHTML = `
+      <div class="load-error">
+        <p class="load-error-text">Couldn't load projects. Try refreshing the page.</p>
+        <button class="load-error-btn" onclick="location.reload()">Refresh</button>
+      </div>`;
+  }
+
+  // Check projects.json's last-modified time first (cheap HEAD request),
+  // then fetch with that as a cache-busting version param. This means
+  // browsers/Cloudflare keep serving cached data between edits (fast,
+  // low bandwidth on repeat visits/reloads) but instantly bust the
+  // cache the moment the file actually changes on the server.
+  fetch('projects.json', { method: 'HEAD' })
+    .then(headRes => {
+      const lastModified = headRes.headers.get('Last-Modified') || Date.now();
+      const version = encodeURIComponent(lastModified);
+      return fetch(`projects.json?v=${version}`);
+    })
+    .then(r => {
+      if (!r.ok) throw new Error('Bad response: ' + r.status);
+      return r.json();
+    })
     .then(projects => {
       allProjects = projects;
       populateYearDropdown();
       buildTagFilter();
       render();
     })
-    .catch(err => console.warn('Could not load projects.json:', err));
+    .catch(err => {
+      console.warn('Could not load projects.json:', err);
+      loadError();
+    });
 }

@@ -787,3 +787,37 @@ a:has(code):hover code {
   }
 }
 
+/* ── LOAD ERROR (fetch failure fallback) ────────────────────────── */
+
+.load-error {
+  text-align: center;
+  padding: 2.5rem 1rem;
+}
+
+.load-error-text {
+  font-family: 'Nanum Gothic Coding', monospace;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-bottom: 1rem;
+}
+
+.load-error-btn {
+  font-family: 'Nanum Gothic Coding', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 5px 13px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.load-error-btn:hover {
+  background: var(--accent-dim);
+  border-color: var(--border-hover);
+  color: var(--accent);
+}
+
