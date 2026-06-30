@@ -390,27 +390,38 @@ if (projectList) {
       </div>`;
   }
 
-  // Check projects.json's last-modified time first (cheap HEAD request),
-  // then fetch with that as a cache-busting version param. This means
-  // browsers/Cloudflare keep serving cached data between edits (fast,
-  // low bandwidth on repeat visits/reloads) but instantly bust the
-  // cache the moment the file actually changes on the server.
-  fetch('projects.json', { method: 'HEAD' })
+  function handleProjects(projects) {
+    allProjects = projects;
+    populateYearDropdown();
+    buildTagFilter();
+    render();
+  }
+
+  function fetchWithTimeout(url, options, ms) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), ms);
+    return fetch(url, { ...options, signal: controller.signal })
+      .finally(() => clearTimeout(timer));
+  }
+
+  // Try the cheap HEAD request first to version the cache by the file's
+  // actual last-modified time (fast repeat loads, instant updates on edit).
+  // If HEAD is blocked or fails for any reason (some browser extensions
+  // flag chained fetches to .json endpoints), fall back to a plain
+  // timestamped fetch instead of failing outright. Either path also has
+  // a timeout so a silently-blocked request shows the error UI instead
+  // of leaving the page blank forever.
+  fetchWithTimeout('projects.json', { method: 'HEAD' }, 4000)
     .then(headRes => {
       const lastModified = headRes.headers.get('Last-Modified') || Date.now();
-      const version = encodeURIComponent(lastModified);
-      return fetch(`projects.json?v=${version}`);
+      return fetchWithTimeout(`projects.json?v=${encodeURIComponent(lastModified)}`, {}, 4000);
     })
+    .catch(() => fetchWithTimeout(`projects.json?v=${Date.now()}`, {}, 4000))
     .then(r => {
       if (!r.ok) throw new Error('Bad response: ' + r.status);
       return r.json();
     })
-    .then(projects => {
-      allProjects = projects;
-      populateYearDropdown();
-      buildTagFilter();
-      render();
-    })
+    .then(handleProjects)
     .catch(err => {
       console.warn('Could not load projects.json:', err);
       loadError();
