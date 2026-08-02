@@ -1,4 +1,39 @@
 [
+
+
+  {
+    "id": "rc-derby",
+    "title": "Remote Control Car",
+    "subtitle": "ASME * RC Derby 2026",
+    "blurb": "Designed and iterated a remote-controlled car using a servo-driven steering system through multiple linkage configurations; contributed to chassis layout and component integration after designing in OnShape. Placed 3rd of 6 teams as the only freshman competitors in the UCF ASME 2026 RC Derby.",
+
+
+    "description": [
+      "Intro",
+      "Middle",
+      "Conclusion"
+    ],
+
+
+    "thumbnail": "",
+
+
+    "images": [
+   
+  ],
+
+
+    "date_start": "2026-05",
+    "date_end":   "2026-08",
+
+    "skills": [
+  "",
+  ""
+]
+
+
+  },
+
   {
     "id": "rc-derby",
     "title": "Remote Control Car",
@@ -48,6 +83,7 @@
 
 
   },
+
   {
     "id": "gnor-submarine",
     "title": "Autonomous Submarine",

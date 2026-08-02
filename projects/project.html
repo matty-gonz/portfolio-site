@@ -112,6 +112,72 @@
       border-color: rgba(126,200,227,0.4);
     }
 
+    /* ── DOCUMENT ATTACHMENTS ─────────────────────────────── */
+    /* Row of file chips below the gallery toggle. Renders nothing
+       at all when a project has no `documents` array. */
+    .doc-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-top: 1.25rem;
+    }
+    .doc-row:empty { display: none; }
+
+    .doc-chip {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      padding: 0.55rem 0.9rem 0.55rem 0.75rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      text-decoration: none;
+      color: var(--text);
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      max-width: 100%;
+    }
+    .doc-chip:hover {
+      background: var(--surface-2);
+      border-color: var(--border-hover);
+      color: var(--accent);
+    }
+
+    .doc-glyph {
+      flex: 0 0 auto;
+      width: 19px;
+      height: 24px;
+      color: var(--text-muted);
+      transition: color 0.2s;
+    }
+    .doc-chip:hover .doc-glyph { color: var(--accent); }
+
+    .doc-text {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .doc-title {
+      font-family: 'Nanum Gothic', sans-serif;
+      font-size: 0.82rem;
+      line-height: 1.25;
+      color: inherit;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .doc-sub {
+      font-family: 'Nanum Gothic Coding', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    @media (max-width: 576px) {
+      .doc-chip { width: 100%; }
+    }
+
     /* ── LIGHTBOX ─────────────────────────────────────────── */
     .lb-overlay {
       display: none;
@@ -345,6 +411,7 @@
           <h1 class="project-detail-title" id="proj-title"></h1>
           <div class="row g-3 mb-2" id="proj-gallery"></div>
           <div id="gallery-toggle-wrap"></div>
+          <div id="proj-documents" class="doc-row"></div>
           <div id="proj-description" class="mt-4"></div>
           <hr class="section-divider">
           <div class="section-label">Skills</div>
@@ -361,6 +428,54 @@
   <script src="../assets/js/main-4.js"></script>
   <script>
     const GALLERY_LIMIT = 4;
+
+    // ── DOCUMENT ATTACHMENT HELPERS ────────────────────────
+    // Monochrome page-with-folded-corner glyph. Inherits colour from
+    // .doc-glyph so the hover transition is handled entirely in CSS.
+    const DOC_GLYPH = `<svg class="doc-glyph" viewBox="0 0 24 30" fill="none"
+        stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true">
+        <path d="M4.5 1.5h9.6l5.4 5.4v21.6h-15z"/>
+        <path d="M14.1 1.5v5.4h5.4"/>
+        <path d="M8 15.5h8M8 20h5" stroke-width="1.3" stroke-linecap="round"/>
+      </svg>`;
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, c =>
+        ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+    }
+
+    // Filename minus path and extension, with %20 etc. decoded — used as
+    // the chip label when a document has no explicit title.
+    function fileLabel(src) {
+      try {
+        return decodeURIComponent(src.split('/').pop().split('?')[0].replace(/\.[^.]+$/, ''));
+      } catch { return 'Document'; }
+    }
+
+    function fileExt(src) {
+      const m = src.split('?')[0].match(/\.([a-z0-9]+)$/i);
+      return m ? m[1].toUpperCase() : 'FILE';
+    }
+
+    function humanSize(bytes) {
+      const n0 = Number(bytes);
+      if (!n0 || !isFinite(n0)) return '';
+      const units = ['B', 'KB', 'MB', 'GB'];
+      let n = n0, u = 0;
+      while (n >= 1024 && u < units.length - 1) { n /= 1024; u++; }
+      return (u === 0 || n >= 10 ? Math.round(n) : n.toFixed(1)) + ' ' + units[u];
+    }
+
+    // R2 is a different origin, so this only works if the bucket sends
+    // CORS headers. If it doesn't, we silently keep just the file type —
+    // the chip is fully usable either way.
+    async function appendFileSize(src, el) {
+      try {
+        const res = await fetch(src, { method: 'HEAD' });
+        const size = humanSize(res.headers.get('Content-Length'));
+        if (size) el.textContent = el.textContent + ' · ' + size;
+      } catch { /* no size shown — not worth surfacing */ }
+    }
 
     // ── LIGHTBOX ───────────────────────────────────────────
     let lbImages = []; // array of {src, caption} objects
@@ -574,6 +689,36 @@
               <div class="col-6 col-sm-3"><div class="gallery-cell"><span>image 3</span></div></div>
               <div class="col-6 col-sm-3"><div class="gallery-cell"><span>image 4</span></div></div>
             `;
+          }
+
+          // ── DOCUMENTS ──────────────────────────────────────
+          // Optional. Projects with no `documents` array render nothing,
+          // and .doc-row:empty collapses the container entirely.
+          const docRow = document.getElementById('proj-documents');
+          const docs   = Array.isArray(p.documents) ? p.documents : [];
+
+          if (docRow && docs.length > 0) {
+            docRow.innerHTML = docs.map((d, i) => {
+              const src   = typeof d === 'string' ? d : d.src;
+              if (!src) return '';
+              const title = (typeof d === 'object' && d.title) ? d.title : fileLabel(src);
+              return `
+                <a class="doc-chip" href="${escapeHtml(src)}" target="_blank" rel="noopener noreferrer">
+                  ${DOC_GLYPH}
+                  <span class="doc-text">
+                    <span class="doc-title">${escapeHtml(title)}</span>
+                    <span class="doc-sub" data-doc-sub="${i}">${escapeHtml(fileExt(src))}</span>
+                  </span>
+                </a>`;
+            }).join('');
+
+            // Fill in file sizes after the chips are already on screen,
+            // so a slow or blocked HEAD request never delays rendering.
+            docs.forEach((d, i) => {
+              const src = typeof d === 'string' ? d : d.src;
+              const el  = docRow.querySelector(`[data-doc-sub="${i}"]`);
+              if (src && el) appendFileSize(src, el);
+            });
           }
 
           // ── DESCRIPTION ────────────────────────────────────

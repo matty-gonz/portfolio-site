@@ -1,3 +1,4 @@
+# hello
 # Staging platform setup
 
 One-time setup. Run the sections in order — the `dev` branch has to exist
