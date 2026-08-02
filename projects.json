@@ -19,7 +19,26 @@
 
 
     "images": [
-   
+    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Completed Electronics (1).jpeg", "caption": "" },
+    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Completed Electronics (2).jpeg", "caption": "" },
+    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Completed Ignition System.jpeg", "caption": "" },
+    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Completed Platform and Electronics Box.jpeg", "caption": "" },
+    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Electronics Box (1).jpeg", "caption": "" },
+    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Electronics Box (2).jpeg", "caption": "" },
+    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Electronics Box (3).jpeg", "caption": "" },
+    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/First Completed Aviation Plug.jpeg", "caption": "" },
+    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/First Soldering Attempt.jpeg", "caption": "" },
+    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Ignition System Wiring Diagram.jpeg", "caption": "" },
+    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Setting Up HX711.jpeg", "caption": "" },
+    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Soldered Female Pins on Arduino Shield - Bottom.jpeg", "caption": "" },
+    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Soldered Female Pins on Arduino Shield - Top.jpeg", "caption": "" },
+    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Soldered Male Pins on HX711.jpeg", "caption": "" },
+    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Testing HX711 using Jumper Cables.jpeg", "caption": "" },
+    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Wiring Diagram for Electronics.png", "caption": "" }
+  ],
+
+  "documents": [
+    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Static Fire Rocket Platform - Schematic.pdf", "title": "Static Fire Rocket Platform - Schematic" }
   ],
 
 

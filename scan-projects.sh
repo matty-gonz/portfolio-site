@@ -7,7 +7,7 @@
 #
 # HOW TO USE:
 #   1. Upload files to R2 first (drag into R2 dashboard)
-#   2. Open Terminal, cd to your Portfolio Site Files folder
+#   2. Open Terminal, cd to your Portfolio Site Files folder [cd /Users/mattyg/Documents/Bootstrap\ Studio/Portfolio\ Site\ Files]
 #   3. Run: bash scan-projects.sh
 #   4. Copy the blocks for your project
 #   5. Paste into projects.json, fill in captions / titles
