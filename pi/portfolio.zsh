@@ -15,6 +15,12 @@
 
 export PORTFOLIO_DIR="$HOME/Documents/Bootstrap Studio/Portfolio Site Files"
 
+# If an older `alias deploy=...` is still live in this shell, zsh will try to
+# expand it while parsing the function definition below and fail with
+# "parse error near ()". Clear it first.
+unalias deploy      2>/dev/null
+unalias deploy-dev  2>/dev/null
+
 # Push local work to the staging site.
 # Optional argument becomes the commit message.
 deploy-dev() {
