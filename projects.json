@@ -2,10 +2,10 @@
 
 
   {
-    "id": "rc-derby",
-    "title": "Remote Control Car",
-    "subtitle": "ASME * RC Derby 2026",
-    "blurb": "Designed and iterated a remote-controlled car using a servo-driven steering system through multiple linkage configurations; contributed to chassis layout and component integration after designing in OnShape. Placed 3rd of 6 teams as the only freshman competitors in the UCF ASME 2026 RC Derby.",
+    "id": "static-fire-rocket-project",
+    "title": "Static Fire Testing Platform and Ignition",
+    "subtitle": "Personal",
+    "blurb": "SFRP description / blurb - 'Researched, designed, and constructed a static-fire testing platform for motors up to 20kg of thrust.'",
 
 
     "description": [
