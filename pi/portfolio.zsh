@@ -33,6 +33,20 @@ deploy-dev() {
     git checkout dev || return 1
   fi
 
+  # One unescaped character in projects.json takes down the entire project
+  # list, and the browser reports it as "Project not found" — which sends you
+  # hunting for the wrong bug. Catch it here instead of on the staging site.
+  if [[ -f projects.json ]] && ! python3 -m json.tool projects.json > /dev/null 2>&1; then
+    echo ""
+    echo "projects.json is not valid JSON — NOTHING was deployed."
+    echo ""
+    python3 -m json.tool projects.json 2>&1 | tail -2
+    echo ""
+    echo "Most common cause: a straight \" inside a caption (e.g. 1/2\" drill bit)."
+    echo "Escape it as \\\" or use the word 'inch'."
+    return 1
+  fi
+
   # If this fails (stale .git/index.lock is the usual cause) we must stop.
   # Continuing would report a successful deploy while shipping nothing.
   if ! git add -A; then
