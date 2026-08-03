@@ -457,6 +457,15 @@
       return m ? m[1].toUpperCase() : 'FILE';
     }
 
+    // main-4.js has its own copy of this, but it's scoped inside a block
+    // that only runs on the index page. This one is for project pages.
+    function fetchWithTimeout(url, options, ms) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), ms);
+      return fetch(url, { ...options, signal: controller.signal })
+        .finally(() => clearTimeout(timer));
+    }
+
     function humanSize(bytes) {
       const n0 = Number(bytes);
       if (!n0 || !isFinite(n0)) return '';
@@ -612,13 +621,51 @@
     if (!id) {
       document.getElementById('proj-error').style.display = 'block';
     } else {
-      // session cache for projects.json — fetched once per tab
-      const cachedProjects = sessionStorage.getItem('projectsCache');
-      const projectsPromise = cachedProjects
-        ? Promise.resolve(JSON.parse(cachedProjects))
-        : fetch('../projects.json')
-            .then(r => r.json())
-            .then(data => { sessionStorage.setItem('projectsCache', JSON.stringify(data)); return data; });
+      // Session cache for projects.json, versioned by the file's own
+      // Last-Modified time — same strategy index.html uses.
+      //
+      // The old version cached unconditionally and never re-checked, so a
+      // tab opened before a deploy kept showing stale content forever.
+      // Now a cheap HEAD request decides: unchanged file reads from cache
+      // (no re-download on spam-reload), changed file re-fetches.
+      //
+      // Note this file is served by nginx on the pi, not from R2 — it costs
+      // nothing to check. R2 bandwidth is governed by the Cloudflare edge
+      // cache and the browser's HTTP cache, not by this.
+      const CACHE_KEY  = 'projectsCache';
+      const STAMP_KEY  = 'projectsCacheStamp';
+
+      async function loadProjects() {
+        let stamp = '';
+        try {
+          const head = await fetchWithTimeout('../projects.json', { method: 'HEAD' }, 4000);
+          stamp = head.headers.get('Last-Modified') || '';
+        } catch { /* HEAD blocked or offline — fall through to a normal fetch */ }
+
+        if (stamp) {
+          const cached = sessionStorage.getItem(CACHE_KEY);
+          if (cached && sessionStorage.getItem(STAMP_KEY) === stamp) {
+            try { return JSON.parse(cached); }
+            catch { sessionStorage.removeItem(CACHE_KEY); }
+          }
+        }
+
+        const res = await fetchWithTimeout(
+          `../projects.json?v=${encodeURIComponent(stamp || Date.now())}`, {}, 6000);
+        if (!res.ok) throw new Error('Bad response: ' + res.status);
+        const data = await res.json();
+
+        // Private browsing and full quotas can both throw here. A failed
+        // cache write is not a failed page load.
+        try {
+          sessionStorage.setItem(CACHE_KEY, JSON.stringify(data));
+          sessionStorage.setItem(STAMP_KEY, stamp);
+        } catch { /* just means we re-fetch next navigation */ }
+
+        return data;
+      }
+
+      const projectsPromise = loadProjects();
 
       projectsPromise
         .then(projects => {

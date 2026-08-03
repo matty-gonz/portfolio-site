@@ -15,27 +15,31 @@
     ],
 
 
-    "thumbnail": "",
+    "thumbnail": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Completed Platform and Electronics Box.jpeg",
 
 
     "images": [
+    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Completed Platform and Electronics Box.jpeg", "caption": "Completed plexiglass platform / scale, with electronics box visible above it. The final build omitted the wooden platform connecting the box and scale for simplicity, but otherwise the scale was constructed as designed in the schematic." },
+    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Wiring Diagram for Electronics.png", "caption": "Preliminary wiring diagram for Arduino, HX711 amplifier, SD reader, and load cell, that I made after researching each component's documentation." },   
+    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/First Soldering Attempt.jpeg", "caption": "Testing my new soldering iron and 22AWG solid core wire on a spare aviation plug." },
+    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/First Completed Aviation Plug.jpeg", "caption": "A completed aviation plug, with the wires on either end lined up to the same terminals. This plug was just used to teach myself how to solder and would not be used in the final build." },
+    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Setting Up HX711.jpeg", "caption": "" },
+    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Soldered Male Pins on HX711.jpeg", "caption": "" },
+    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Testing HX711 using Jumper Cables.jpeg", "caption": "" },    
+    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Soldered Female Pins on Arduino Shield - Bottom.jpeg", "caption": "" },
+    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Soldered Female Pins on Arduino Shield - Top.jpeg", "caption": "" },
     { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Completed Electronics (1).jpeg", "caption": "" },
     { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Completed Electronics (2).jpeg", "caption": "" },
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Completed Ignition System.jpeg", "caption": "" },
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Completed Platform and Electronics Box.jpeg", "caption": "" },
+    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Soldering Load Cells to Aviation Plug (1).jpeg", "caption": "" },
+    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Soldering Load Cells to Aviation Plug (2).jpeg", "caption": "" },
+    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Electronics in Electronics Box.jpeg", "caption": "" },
     { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Electronics Box (1).jpeg", "caption": "" },
     { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Electronics Box (2).jpeg", "caption": "" },
     { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Electronics Box (3).jpeg", "caption": "" },
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/First Completed Aviation Plug.jpeg", "caption": "" },
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/First Soldering Attempt.jpeg", "caption": "" },
     { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Ignition System Wiring Diagram.jpeg", "caption": "" },
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Setting Up HX711.jpeg", "caption": "" },
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Soldered Female Pins on Arduino Shield - Bottom.jpeg", "caption": "" },
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Soldered Female Pins on Arduino Shield - Top.jpeg", "caption": "" },
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Soldered Male Pins on HX711.jpeg", "caption": "" },
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Testing HX711 using Jumper Cables.jpeg", "caption": "" },
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Wiring Diagram for Electronics.png", "caption": "" }
+    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Completed Ignition System.jpeg", "caption": "" }
   ],
+
 
   "documents": [
     { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Static Fire Rocket Platform - Schematic.pdf", "title": "Static Fire Rocket Platform - Schematic" }

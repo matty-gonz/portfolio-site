@@ -33,7 +33,17 @@ deploy-dev() {
     git checkout dev || return 1
   fi
 
-  git add -A
+  # If this fails (stale .git/index.lock is the usual cause) we must stop.
+  # Continuing would report a successful deploy while shipping nothing.
+  if ! git add -A; then
+    echo ""
+    echo "git add failed — NOTHING was deployed."
+    echo "If the error above mentions index.lock, no other git process is"
+    echo "running; it's a stale file. Remove it and try again:"
+    echo "  rm -f \"\$PORTFOLIO_DIR/.git/index.lock\""
+    return 1
+  fi
+
   if git diff --cached --quiet; then
     echo "Nothing new to commit — pushing anyway in case the last push failed."
   else
