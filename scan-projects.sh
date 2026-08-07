@@ -22,7 +22,25 @@ R2_BASE="https://media.matthewjgonzalez.me"
 MEDIA_DIR="media"
 
 IMAGE_EXTS="jpg jpeg png webp gif JPG JPEG PNG WEBP GIF mp4 mov MP4 MOV webm"
-DOC_EXTS="pdf PDF"
+# Anything listed here becomes an attachment chip on the project page.
+# The site sorts each file into a kind (doc / code / model / data /
+# archive) by its extension and picks the matching icon and colour, so
+# adding an extension here is usually all that's needed.
+#
+# If you add a type the site doesn't recognise it still works — it just
+# gets the generic document icon. To give it the right icon, add the
+# extension to the matching `ext` list in FILE_KINDS in
+# projects/project.html.
+DOC_EXTS_DOC="pdf doc docx txt md rtf"
+DOC_EXTS_CODE="ino py c h cpp hpp js ts java cs m rb go rs sh ipynb json xml yml yaml"
+DOC_EXTS_MODEL="step stp stl f3d sldprt sldasm iges igs obj 3mf dxf dwg ipt iam gltf"
+DOC_EXTS_DATA="csv tsv xlsx xls numbers mat"
+DOC_EXTS_ARCHIVE="zip tar gz rar 7z"
+
+DOC_EXTS="$DOC_EXTS_DOC $DOC_EXTS_CODE $DOC_EXTS_MODEL $DOC_EXTS_DATA $DOC_EXTS_ARCHIVE"
+
+# Match both cases without listing every extension twice.
+DOC_EXTS="$DOC_EXTS $(echo "$DOC_EXTS" | tr '[:lower:]' '[:upper:]')"
 
 if [ ! -d "$MEDIA_DIR" ]; then
   echo ""
