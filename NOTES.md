@@ -52,17 +52,37 @@ deploy-rollback        # revert the last live commit
 attachments. Reached via `viewer.html?src=<url>&title=<name>&from=<id>`;
 `from` is what makes its back link return to the project.
 
-- **code** — highlight.js from cdnjs, line numbers in a separate cell so
-  copying gives you the source without numbers glued on. Extension maps to
-  language via `LANGS`; `.ino` renders as C++. Unknown extensions still
-  render, just unhighlighted.
+- **code** — highlight.js, line numbers in a separate cell so copying gives
+  you the source without numbers glued on. Extension maps to language via
+  `LANGS`; `.ino` renders as C++. Unknown extensions still render, just
+  unhighlighted.
 - **`.md`** — rendered with marked.
-- **`.csv` / `.tsv`** — real table, sticky header, row numbers. Parser
+- **`.csv` / `.tsv`** — table with sticky header and row numbers. Parser
   handles quoted fields, embedded commas and newlines, escaped quotes.
-- Previews cap at 2 MB (`MAX_BYTES`); above that it's a download prompt.
-  Binary content is detected by a NUL byte and refused.
-- If a CDN library fails to load it degrades to plain text rather than
-  breaking.
+- **`.xlsx` / `.xls` / `.xlsm`** — SheetJS. One tab per sheet (the tab strip
+  only appears for multi-sheet workbooks); each sheet uses the same table
+  renderer as CSV.
+- **`.zip`** — JSZip reads the central directory, so contents are listed
+  with sizes and dates **without extracting**. Nothing is written anywhere.
+- **`.stl`** — three.js. STL is parsed by hand rather than with three's
+  `STLLoader`, because the `examples/` folder isn't reliably CDN-hosted;
+  binary STL is a fixed 50-byte record per triangle. Drag-to-rotate and
+  scroll-to-zoom are ~40 lines rather than OrbitControls, same reason.
+  Handles both binary and ASCII STL. Rotates the mesh, not the camera, so
+  lighting stays fixed and the model reads from any angle.
+
+Caps: 2 MB for text (`MAX_TEXT`), 25 MB for binary (`MAX_BINARY`) — parsing
+a mesh is cheaper than highlighting, and STLs are legitimately large. Over
+the cap you get a download prompt. Binary content in a text file is caught
+by a NUL byte and refused.
+
+Libraries load only when that file type is opened, so nothing here slows a
+project page. If a CDN fetch fails, each renderer degrades to a download
+prompt instead of a blank screen.
+
+**PDFs deliberately stay native.** The browser's own viewer has search,
+print, thumbnails and page navigation; PDF.js would be ~1 MB to build
+something worse.
 
 Routing lives in `project.html`: `IN_VIEWER` goes to the viewer, `NATIVE`
 (PDF, images) opens directly, everything else downloads.
@@ -71,11 +91,12 @@ Routing lives in `project.html`: `IN_VIEWER` goes to the viewer, `NATIVE`
 
 ## Open work — deferred
 
-### STL viewer
+### Formats with no browser reader
 
-A three.js STLLoader preview for `.stl`, in the same viewer page. Not
-started. STEP / F3D / SLDPRT aren't feasible in a browser — export an STL
-alongside, or add a public OnShape link as its own chip.
+**STEP / STP** would need a CAD kernel compiled to WebAssembly — several
+megabytes and slow. **F3D / SLDPRT** are proprietary with no browser-side
+reader at all. Export an STL alongside (which the viewer handles), or add a
+public OnShape link as its own chip.
 
 ### Smaller items
 
