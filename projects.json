@@ -59,9 +59,19 @@
     "date_end": "2026-08",
 
     "skills": [
-      "",
-      ""
-    ]
+  "Electrical Systems",
+  "Soldering",
+  "Arduino",
+  "Data Acquisition",
+  "Data Analysis",
+  "Prototyping",
+  "Construction",
+  "Rocketry",
+  "Solid Fuel Propulsion",
+  "Sketching",
+  "Project Management"
+]
+
   },
   {
     "id": "rc-derby",
@@ -76,6 +86,7 @@
     ],
 
     "thumbnail": "https://media.matthewjgonzalez.me/rc-derby/Completed Car.JPG",
+    "thumbnail_hover": "",
 
     "images": [
       { "src": "https://media.matthewjgonzalez.me/rc-derby/Completed Car.JPG", "caption": "The completed car with all its systems in place." },
@@ -102,6 +113,7 @@
       "Servo Mechanisms",
       "Vehicle Steering",
       "Electrical Systems",
+      "Soldering",
       "Team Leadership",
       "Project Management"
     ]
@@ -149,6 +161,7 @@
       "Waterproofing",
       "Fluid Propulsion",
       "Electrical Systems",
+      "Soldering",
       "Team Leadership",
       "Project Management"
     ]

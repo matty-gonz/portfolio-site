@@ -153,6 +153,35 @@ The alternative is generating poster JPEGs by hand and uploading them
 alongside each video, which adds a step to the media workflow. Decided
 against it. Reverted Aug 2026.
 
+## Tags (the `skills` array)
+
+Tags drive the filter row on the index page, so a tag used by only one
+project can't actually filter anything. Prefer reusing an existing tag, and
+when adding a new one, consider whether it should be applied retroactively.
+
+**In use as of Aug 2026** — 11 tags per project.
+
+Shared by all three — `Electrical Systems`, `Project Management`,
+`Prototyping`, `Sketching`, `Soldering`
+
+Shared by two — `CAD`, `3D Printing`, `Team Leadership`
+
+Static fire only — `Arduino`, `Construction`, `Data Acquisition`,
+`Data Analysis`, `Rocketry`, `Solid Fuel Propulsion`
+
+RC Derby only — `Chassis Design`, `Servo Mechanisms`, `Vehicle Steering`
+
+Submarine only — `Hull Design`, `Waterproofing`, `Fluid Propulsion`
+
+Note the deliberate parallel between `Fluid Propulsion` and
+`Solid Fuel Propulsion` — keep that pattern for future propulsion work.
+
+`Construction` is a candidate for retroactive application to the other two
+builds, which would make it filterable.
+
+Watch for empty strings in the array (`""`), which render as blank tag
+buttons in the filter row.
+
 ## Animated card thumbnails
 
 Two independent fields, handled by `cardHTML` in `assets/js/main-4.js`:
