@@ -81,6 +81,13 @@ for p in data:
             src = item if isinstance(item, str) else (item or {}).get('src', '')
             if src:
                 print(unquote(src))
+    # Thumbnails and hover clips are referenced outside those arrays. Without
+    # this a card's hover clip — which deliberately isn't in `images` so it
+    # stays out of the gallery — would be reported as new on every run.
+    for key in ('thumbnail', 'thumbnail_hover'):
+        src = p.get(key)
+        if src:
+            print(unquote(src))
 PY
 
   if grep -q '^__JSON_ERROR__' "$KNOWN_FILE" 2>/dev/null; then

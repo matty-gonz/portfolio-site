@@ -267,6 +267,10 @@ if (projectList) {
     });
   }
 
+  function isVideoSrc(src) {
+    return /\.(mp4|mov|webm|ogg)$/i.test((src || '').split('?')[0]);
+  }
+
   function cardHTML(p) {
     const thumbSrc = p.thumbnail
       ? p.thumbnail
@@ -274,9 +278,35 @@ if (projectList) {
         ? (typeof p.images[0] === 'object' ? p.images[0].src : p.images[0])
         : null;
 
-    const thumbHTML = thumbSrc
-      ? `<img src="${thumbSrc}" class="card-thumb" alt="${p.title}">`
-      : `<div class="card-image-box"><span class="img-placeholder">${p.id}</span></div>`;
+    // Optional clip that plays over the still on hover. Kept separate from
+    // `images` so it never shows up in the gallery — the card's motion and
+    // the project's photos are different things.
+    const hoverSrc = isVideoSrc(p.thumbnail_hover) ? p.thumbnail_hover : null;
+
+    let thumbHTML;
+    if (!thumbSrc) {
+      thumbHTML = `<div class="card-image-box"><span class="img-placeholder">${p.id}</span></div>`;
+    } else if (isVideoSrc(thumbSrc)) {
+      // The still itself is a video: show a frame from it, play on hover.
+      // `#t=1` names the frame; wireCardVideos() forces the seek, because
+      // the fragment alone doesn't make the browser decode and paint it.
+      thumbHTML = `<video class="card-thumb card-thumb-video" muted loop playsinline
+                          preload="metadata" tabindex="-1" aria-label="${p.title}">
+                     <source src="${thumbSrc}#t=1">
+                   </video>`;
+    } else if (hoverSrc) {
+      // Still image with a separate clip layered over it. preload="none"
+      // means the clip isn't downloaded until someone actually hovers.
+      thumbHTML = `<span class="card-thumb-wrap">
+                     <img src="${thumbSrc}" class="card-thumb" alt="${p.title}">
+                     <video class="card-thumb-hover" muted loop playsinline
+                            preload="none" tabindex="-1" aria-hidden="true">
+                       <source src="${hoverSrc}">
+                     </video>
+                   </span>`;
+    } else {
+      thumbHTML = `<img src="${thumbSrc}" class="card-thumb" alt="${p.title}">`;
+    }
 
     return `
       <a class="project-card card h-100" href="projects/project.html?id=${p.id}">
@@ -301,11 +331,55 @@ if (projectList) {
       </a>`;
   }
 
+  // Wire up both flavours of moving thumbnail. Re-run after every render,
+  // because filtering and sorting rebuild the whole list.
+  function wireCardVideos() {
+    const stillOnly = window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const play = v => { const r = v.play(); if (r && r.catch) r.catch(() => {}); };
+
+    // (a) the thumbnail is itself a video — show a frame, play on hover
+    projectList.querySelectorAll('.card-thumb-video').forEach(v => {
+      const seek = () => { try { v.currentTime = 1; } catch (_) {} };
+      if (v.readyState >= 1) seek();
+      else v.addEventListener('loadedmetadata', seek, { once: true });
+
+      if (stillOnly) return;   // asked for less motion: still frame only
+
+      const card = v.closest('.project-card') || v;
+      card.addEventListener('mouseenter', () => { v.currentTime = 0; play(v); });
+      card.addEventListener('mouseleave', () => { v.pause(); seek(); });
+    });
+
+    // (b) a separate clip fading in over a still image
+    projectList.querySelectorAll('.card-thumb-hover').forEach(v => {
+      if (stillOnly) { v.remove(); return; }
+
+      const card = v.closest('.project-card') || v;
+      card.addEventListener('mouseenter', () => {
+        v.currentTime = 0;
+        play(v);
+        v.classList.add('showing');
+      });
+      card.addEventListener('mouseleave', () => {
+        v.classList.remove('showing');
+        // Let the crossfade finish before pausing, so the last visible
+        // frame isn't a frozen one.
+        setTimeout(() => { if (!v.classList.contains('showing')) v.pause(); }, 260);
+      });
+
+      // If the file is missing or unplayable, drop it and leave the still.
+      v.addEventListener('error', () => v.remove());
+    });
+  }
+
   function render() {
     const filtered = getFiltered(getSorted(currentSort));
     projectList.innerHTML = filtered.length === 0
       ? '<p class="no-results">No projects match the current filters.</p>'
       : `<div class="row g-3 g-lg-4">${filtered.map(p => `<div class="col-12 col-sm-6">${cardHTML(p)}</div>`).join('')}</div>`;
+    wireCardVideos();
   }
 
   function setSort(mode) {

@@ -153,6 +153,41 @@ The alternative is generating poster JPEGs by hand and uploading them
 alongside each video, which adds a step to the media workflow. Decided
 against it. Reverted Aug 2026.
 
+## Animated card thumbnails
+
+Two independent fields, handled by `cardHTML` in `assets/js/main-4.js`:
+
+```json
+"thumbnail":       "https://media.matthewjgonzalez.me/<project>/Completed Car.JPG",
+"thumbnail_hover": "https://media.matthewjgonzalez.me/<project>/car-loop.mov"
+```
+
+- `thumbnail` alone, an image → plain `<img>`, exactly as before.
+- `thumbnail` image + `thumbnail_hover` clip → the clip crossfades in over
+  the still on hover. `preload="none"`, so it isn't downloaded until
+  someone actually hovers.
+- `thumbnail` pointing at a *video* → shows its frame at 1s and plays on
+  hover, no separate file needed.
+- `thumbnail_hover` missing, blank, or not a video extension → ignored.
+
+The hover clip is **not** listed in `images`, so it never appears in the
+gallery. `scan-projects.sh` reads `thumbnail` and `thumbnail_hover` when
+building its known-file list, so it won't report those as new every run.
+
+A clip that 404s or won't play removes itself and leaves the still. Honours
+`prefers-reduced-motion` — the still shows and nothing ever animates.
+
+**Making one, no extra tools:** open the clip in QuickTime, Edit → Trim
+(Cmd+T) down to 3–5 seconds, then File → Export As → 480p. Keep the `.mov`
+— the site already plays `.mov` in the gallery. Expect 200–500 KB. Match
+the still's aspect ratio where you can; the clip is `object-fit: cover`, so
+a very different shape gets cropped.
+
+Don't use a real `.gif`: 256 colours and almost no interframe compression
+means the same clip lands around 9 MB, heavier than every photo on the page
+combined. Animated WebP works in an `<img>` with no code change at all, but
+is still roughly 7x a video and needs a converter to produce.
+
 ## Attachment schema
 
 ```json

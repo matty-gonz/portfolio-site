@@ -216,68 +216,6 @@
       background: rgba(255,255,255,0.012);
     }
 
-    /* ── SHEET TABS ───────────────────────────────────────── */
-    .sheet-tabs {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.35rem;
-      margin-bottom: 0.7rem;
-    }
-    .sheet-tab {
-      font-family: 'Nanum Gothic Coding', monospace;
-      font-size: 0.6rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 3px;
-      padding: 6px 13px;
-      cursor: pointer;
-      transition: color 0.15s, border-color 0.15s, background 0.15s;
-    }
-    .sheet-tab:hover { color: var(--text); border-color: var(--border-hover); }
-    .sheet-tab.active {
-      color: var(--accent);
-      background: var(--accent-dim);
-      border-color: rgba(126,200,227,0.3);
-    }
-
-    /* ── ZIP LISTING ──────────────────────────────────────── */
-    .zip-table td { white-space: nowrap; }
-    .zip-name { color: var(--text) !important; }
-    .zip-dir  { color: var(--text-dim); }
-    .zip-size, .zip-date { text-align: right !important; color: var(--text-muted) !important; }
-    .zip-foot {
-      font-family: 'Nanum Gothic Coding', monospace;
-      font-size: 0.58rem;
-      letter-spacing: 0.1em;
-      color: var(--text-dim);
-      margin-top: 0.8rem;
-    }
-
-    /* ── 3D MODEL ─────────────────────────────────────────── */
-    .stl-wrap {
-      position: relative;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      overflow: hidden;
-    }
-    #stl-canvas { width: 100%; height: 68vh; min-height: 340px; }
-    #stl-canvas canvas { display: block; }
-    .stl-hint {
-      position: absolute;
-      left: 0.9rem;
-      bottom: 0.75rem;
-      font-family: 'Nanum Gothic Coding', monospace;
-      font-size: 0.55rem;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      color: var(--text-dim);
-      pointer-events: none;
-    }
-
     /* ── STATES ───────────────────────────────────────────── */
     .v-note {
       background: var(--surface);
@@ -350,28 +288,14 @@
   <script src="../assets/js/main-4.js"></script>
   <script>
     // ── CONFIG ─────────────────────────────────────────────
-    // Anything bigger renders as a download prompt instead. Text is capped
-    // low because highlighting a multi-megabyte file locks the tab for
-    // seconds; binary formats get more headroom since parsing a workbook
-    // or mesh is comparatively cheap and STLs are legitimately large.
-    const MAX_TEXT   = 2  * 1024 * 1024;
-    const MAX_BINARY = 25 * 1024 * 1024;
+    // Anything bigger than this renders as a download prompt instead.
+    // Highlighting a multi-megabyte file locks the tab for seconds.
+    const MAX_BYTES = 2 * 1024 * 1024;
 
-    // Loaded on demand — a project page never pays for these, and opening
-    // a .ino doesn't download the spreadsheet parser.
     const CDN = {
-      hljs:   'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js',
-      marked: 'https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js',
-      xlsx:   'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
-      jszip:  'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',
-      three:  'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js'
+      hljs: 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js',
+      marked: 'https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js'
     };
-
-    // Binary formats: fetched as an ArrayBuffer rather than text.
-    const XLSX_EXTS = ['xlsx', 'xls', 'xlsm'];
-    const ZIP_EXTS  = ['zip'];
-    const STL_EXTS  = ['stl'];
-    const BINARY    = [...XLSX_EXTS, ...ZIP_EXTS, ...STL_EXTS];
 
     // Extension -> highlight.js language id. Anything unlisted still
     // renders, just without highlighting.
@@ -436,29 +360,8 @@
                   <path d="m5 16-3 3 3 3"/><path d="m9 22 3-3-3-3"/>
                 </g>`
       },
-      model: {
-        ext: ['stl','step','stp','f3d','obj','3mf','iges','igs'],
-        color: '#f2b366',
-        glyph: `<g transform="translate(0,1)" stroke-linecap="round">
-                  <path d="M14 2v5a1 1 0 0 0 1 1h5"/>
-                  <path d="M14.692 22H18a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v3.804"/>
-                  <path d="M2.264 13.752 7 16.5l4.737-2.748"/>
-                  <path d="M2.995 13.014A2 2 0 0 0 2 14.744v3.516a2 2 0 0 0 .996 1.73l3 1.74a2 2 0 0 0 2.008 0l3-1.74A2 2 0 0 0 12 18.26v-3.517a2 2 0 0 0-.995-1.73l-3-1.742a2 2 0 0 0-1.892-.064z"/>
-                  <path d="M7 16.5V22"/>
-                </g>`
-      },
-      archive: {
-        ext: ['zip','tar','gz','rar','7z'],
-        color: '#93a3b8',
-        glyph: `<g transform="translate(-1,1)" stroke-linecap="round">
-                  <path d="M13.659 22H18a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v11.5"/>
-                  <path d="M14 2v5a1 1 0 0 0 1 1h5"/>
-                  <path d="M8 12v-1"/><path d="M8 18v-2"/><path d="M8 7V6"/>
-                  <circle cx="8" cy="20" r="2"/>
-                </g>`
-      },
       data: {
-        ext: ['csv','tsv','xlsx','xls','xlsm','numbers','db','sqlite','mat'],
+        ext: ['csv','tsv','xlsx','xls','numbers','db','sqlite','mat'],
         color: '#b39dfa',
         glyph: `<g transform="translate(-1,1)" stroke-linecap="round">
                   <path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/>
@@ -560,294 +463,25 @@
       return rows.filter(r => r.length > 1 || r[0] !== '');
     }
 
-    // Shared by CSV/TSV and by each sheet of a workbook.
-    function tableMarkup(rows) {
-      if (!rows.length) return '';
-      const width = Math.max(...rows.map(r => r.length));
-      const [head, ...body] = rows;
-      const thead = '<tr><th class="csv-rownum"></th>' +
-        Array.from({ length: width }, (_, c) =>
-          `<th>${escapeHtml(head[c] ?? '')}</th>`).join('') + '</tr>';
-      const tbody = body.map((r, i) =>
-        `<tr><td class="csv-rownum">${i + 1}</td>` +
-        Array.from({ length: width }, (_, c) =>
-          `<td>${escapeHtml(r[c] ?? '')}</td>`).join('') + '</tr>'
-      ).join('');
-      return `<div class="csv-wrap"><table class="csv-table">
-                <thead>${thead}</thead><tbody>${tbody}</tbody></table></div>`;
-    }
-
-    function setDims(rows) {
-      if (!rows.length) return;
-      const cols = Math.max(...rows.map(r => r.length));
-      const base = $('file-meta').textContent.split(' · ').slice(0, 2).join(' · ');
-      $('file-meta').textContent = `${base} · ${rows.length - 1} rows × ${cols} cols`;
-    }
-
     function renderTable(text, ext) {
       const rows = parseDelimited(text, ext === 'tsv' ? '\t' : ',');
       if (!rows.length) { note('<strong>Empty file</strong>Nothing to show.'); return; }
-      $('content').innerHTML = tableMarkup(rows);
-      setDims(rows);
-    }
 
-    // ── SPREADSHEET ────────────────────────────────────────
-    function renderWorkbook(buf) {
-      if (!window.XLSX) {
-        note(`<strong>Couldn't load the spreadsheet reader</strong>
-              The parser failed to download.
-              <br><a class="file-btn" href="${escapeHtml($('raw-btn').href)}" download>Download raw</a>`);
-        return;
-      }
-      let wb;
-      try {
-        wb = window.XLSX.read(new Uint8Array(buf), { type: 'array' });
-      } catch (e) {
-        note(`<strong>Couldn't read this workbook</strong>
-              ${escapeHtml(e.message || 'The file may be corrupt or password protected.')}
-              <br><a class="file-btn" href="${escapeHtml($('raw-btn').href)}" download>Download raw</a>`);
-        return;
-      }
+      const [head, ...body] = rows;
+      const thead = '<tr><th class="csv-rownum"></th>' +
+        head.map(h => `<th>${escapeHtml(h)}</th>`).join('') + '</tr>';
+      const tbody = body.map((r, i) =>
+        `<tr><td class="csv-rownum">${i + 1}</td>` +
+        head.map((_, c) => `<td>${escapeHtml(r[c] ?? '')}</td>`).join('') +
+        '</tr>'
+      ).join('');
 
-      const names = wb.SheetNames || [];
-      if (!names.length) { note('<strong>Empty workbook</strong>No sheets found.'); return; }
+      $('content').innerHTML =
+        `<div class="csv-wrap"><table class="csv-table">
+           <thead>${thead}</thead><tbody>${tbody}</tbody></table></div>`;
 
-      const sheetRows = names.map(n =>
-        window.XLSX.utils.sheet_to_json(wb.Sheets[n], { header: 1, defval: '', blankrows: false }));
-
-      // Only show the tab strip when there's actually a choice to make.
-      const tabs = names.length > 1
-        ? `<div class="sheet-tabs">${names.map((n, i) =>
-            `<button class="sheet-tab${i === 0 ? ' active' : ''}" data-sheet="${i}">${escapeHtml(n)}</button>`
-          ).join('')}</div>`
-        : '';
-
-      $('content').innerHTML = tabs + `<div id="sheet-body">${tableMarkup(sheetRows[0])}</div>`;
-      setDims(sheetRows[0]);
-
-      if (names.length > 1) {
-        $('content').querySelector('.sheet-tabs').addEventListener('click', e => {
-          const btn = e.target.closest('.sheet-tab');
-          if (!btn) return;
-          const i = Number(btn.dataset.sheet);
-          $('content').querySelectorAll('.sheet-tab')
-            .forEach(b => b.classList.toggle('active', b === btn));
-          $('sheet-body').innerHTML = tableMarkup(sheetRows[i]);
-          setDims(sheetRows[i]);
-        });
-      }
-    }
-
-    // ── ZIP ────────────────────────────────────────────────
-    async function renderArchive(buf) {
-      if (!window.JSZip) {
-        note(`<strong>Couldn't load the archive reader</strong>
-              <br><a class="file-btn" href="${escapeHtml($('raw-btn').href)}" download>Download raw</a>`);
-        return;
-      }
-      let zip;
-      try {
-        zip = await window.JSZip.loadAsync(buf);
-      } catch (e) {
-        note(`<strong>Couldn't read this archive</strong>
-              It may be corrupt, or a format JSZip doesn't handle (rar, 7z).
-              <br><a class="file-btn" href="${escapeHtml($('raw-btn').href)}" download>Download raw</a>`);
-        return;
-      }
-
-      const entries = [];
-      zip.forEach((path, e) => {
-        if (e.dir) return;
-        entries.push({
-          path,
-          size: (e._data && e._data.uncompressedSize) || 0,
-          date: e.date
-        });
-      });
-
-      if (!entries.length) { note('<strong>Empty archive</strong>No files inside.'); return; }
-      entries.sort((a, b) => a.path.localeCompare(b.path));
-
-      const total = entries.reduce((s, e) => s + e.size, 0);
-      const rows = entries.map(e => {
-        const name = e.path.split('/').pop();
-        const dir  = e.path.slice(0, e.path.length - name.length);
-        const d    = e.date ? e.date.toISOString().slice(0, 10) : '';
-        return `<tr>
-          <td class="zip-name">${dir ? `<span class="zip-dir">${escapeHtml(dir)}</span>` : ''}${escapeHtml(name)}</td>
-          <td class="zip-size">${humanSize(e.size) || '—'}</td>
-          <td class="zip-date">${d}</td>
-        </tr>`;
-      }).join('');
-
-      $('content').innerHTML = `
-        <div class="csv-wrap">
-          <table class="csv-table zip-table">
-            <thead><tr><th>File</th><th>Size</th><th>Modified</th></tr></thead>
-            <tbody>${rows}</tbody>
-          </table>
-        </div>
-        <p class="zip-foot">Contents only — nothing has been extracted. Use Download raw for the archive itself.</p>`;
-
-      const base = $('file-meta').textContent.split(' · ').slice(0, 2).join(' · ');
-      $('file-meta').textContent =
-        `${base} · ${entries.length} files · ${humanSize(total)} uncompressed`;
-    }
-
-    // ── STL ────────────────────────────────────────────────
-    // Written out rather than pulled from three.js's examples folder,
-    // which isn't reliably CDN-hosted. Binary STL is a fixed 50-byte
-    // record per triangle, so this is short and has no dependency risk.
-    function parseSTL(buf) {
-      const dv = new DataView(buf);
-      const nTri = buf.byteLength >= 84 ? dv.getUint32(80, true) : 0;
-      const isBinary = buf.byteLength === 84 + nTri * 50;
-
-      if (isBinary) {
-        const pos = new Float32Array(nTri * 9);
-        const nor = new Float32Array(nTri * 9);
-        let o = 84;
-        for (let t = 0; t < nTri; t++) {
-          const nx = dv.getFloat32(o, true), ny = dv.getFloat32(o + 4, true), nz = dv.getFloat32(o + 8, true);
-          o += 12;
-          for (let v = 0; v < 3; v++) {
-            const i = t * 9 + v * 3;
-            pos[i]     = dv.getFloat32(o, true);
-            pos[i + 1] = dv.getFloat32(o + 4, true);
-            pos[i + 2] = dv.getFloat32(o + 8, true);
-            nor[i] = nx; nor[i + 1] = ny; nor[i + 2] = nz;
-            o += 12;
-          }
-          o += 2; // attribute byte count
-        }
-        return { pos, nor, count: nTri };
-      }
-
-      // ASCII fallback
-      const text = new TextDecoder().decode(buf);
-      const verts = [], norms = [];
-      const facet = /facet\s+normal\s+([-\d.eE+]+)\s+([-\d.eE+]+)\s+([-\d.eE+]+)([\s\S]*?)endfacet/g;
-      const vert  = /vertex\s+([-\d.eE+]+)\s+([-\d.eE+]+)\s+([-\d.eE+]+)/g;
-      let m;
-      while ((m = facet.exec(text)) !== null) {
-        const n = [parseFloat(m[1]), parseFloat(m[2]), parseFloat(m[3])];
-        let v, c = 0;
-        vert.lastIndex = 0;
-        while ((v = vert.exec(m[4])) !== null && c < 3) {
-          verts.push(parseFloat(v[1]), parseFloat(v[2]), parseFloat(v[3]));
-          norms.push(n[0], n[1], n[2]);
-          c++;
-        }
-      }
-      return {
-        pos: new Float32Array(verts),
-        nor: new Float32Array(norms),
-        count: verts.length / 9
-      };
-    }
-
-    function renderSTL(buf) {
-      if (!window.THREE) {
-        note(`<strong>Couldn't load the 3D viewer</strong>
-              <br><a class="file-btn" href="${escapeHtml($('raw-btn').href)}" download>Download raw</a>`);
-        return;
-      }
-
-      let geo;
-      try {
-        geo = parseSTL(buf);
-        if (!geo.count) throw new Error('no triangles found');
-      } catch (e) {
-        note(`<strong>Couldn't read this model</strong>
-              ${escapeHtml(e.message)}
-              <br><a class="file-btn" href="${escapeHtml($('raw-btn').href)}" download>Download raw</a>`);
-        return;
-      }
-
-      $('content').innerHTML = `
-        <div class="stl-wrap"><div id="stl-canvas"></div>
-          <div class="stl-hint">drag to rotate · scroll to zoom</div>
-        </div>`;
-
-      const THREE = window.THREE;
-      const host  = $('stl-canvas');
-      const W = () => host.clientWidth || 800;
-      const H = () => host.clientHeight || 500;
-
-      const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(42, W() / H(), 0.1, 5000);
-      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-      renderer.setSize(W(), H());
-      host.appendChild(renderer.domElement);
-
-      const bg = new THREE.BufferGeometry();
-      bg.setAttribute('position', new THREE.BufferAttribute(geo.pos, 3));
-      bg.setAttribute('normal',   new THREE.BufferAttribute(geo.nor, 3));
-      bg.computeBoundingBox();
-
-      // Centre on the origin and scale so any model fills the same frame.
-      const box = bg.boundingBox;
-      const ctr = new THREE.Vector3(
-        (box.min.x + box.max.x) / 2, (box.min.y + box.max.y) / 2, (box.min.z + box.max.z) / 2);
-      bg.translate(-ctr.x, -ctr.y, -ctr.z);
-      const span = Math.max(box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z) || 1;
-
-      const mesh = new THREE.Mesh(bg, new THREE.MeshPhongMaterial({
-        color: 0xc9d3dd, specular: 0x223344, shininess: 22, flatShading: true
-      }));
-      scene.add(mesh);
-
-      scene.add(new THREE.AmbientLight(0xffffff, 0.55));
-      const key = new THREE.DirectionalLight(0xffffff, 0.85);
-      key.position.set(1, 1.4, 1.2);
-      scene.add(key);
-      const rim = new THREE.DirectionalLight(0x7ec8e3, 0.45);
-      rim.position.set(-1.2, -0.6, -1);
-      scene.add(rim);
-
-      let dist = span * 2.1;
-      camera.position.set(0, 0, dist);
-
-      // Minimal orbit: yaw/pitch on drag, dolly on wheel. Rotating the
-      // mesh rather than the camera keeps the lights fixed, so the model
-      // stays legible from every angle.
-      let dragging = false, px = 0, py = 0;
-      mesh.rotation.set(-Math.PI / 2.6, 0, 0);
-
-      const el = renderer.domElement;
-      el.style.cursor = 'grab';
-      el.addEventListener('pointerdown', e => {
-        dragging = true; px = e.clientX; py = e.clientY;
-        el.setPointerCapture(e.pointerId); el.style.cursor = 'grabbing';
-      });
-      el.addEventListener('pointermove', e => {
-        if (!dragging) return;
-        mesh.rotation.y += (e.clientX - px) * 0.01;
-        mesh.rotation.x += (e.clientY - py) * 0.01;
-        px = e.clientX; py = e.clientY;
-      });
-      const stop = e => {
-        dragging = false; el.style.cursor = 'grab';
-        try { el.releasePointerCapture(e.pointerId); } catch (_) {}
-      };
-      el.addEventListener('pointerup', stop);
-      el.addEventListener('pointercancel', stop);
-      el.addEventListener('wheel', e => {
-        e.preventDefault();
-        dist = Math.min(span * 8, Math.max(span * 0.6, dist * (1 + Math.sign(e.deltaY) * 0.12)));
-        camera.position.z = dist;
-      }, { passive: false });
-
-      window.addEventListener('resize', () => {
-        camera.aspect = W() / H(); camera.updateProjectionMatrix();
-        renderer.setSize(W(), H());
-      });
-
-      (function loop() { requestAnimationFrame(loop); renderer.render(scene, camera); })();
-
-      const base = $('file-meta').textContent.split(' · ').slice(0, 2).join(' · ');
-      $('file-meta').textContent = `${base} · ${geo.count.toLocaleString()} triangles`;
+      const meta = $('file-meta').textContent;
+      $('file-meta').textContent = meta + ` · ${body.length} rows × ${head.length} cols`;
     }
 
     // ── MAIN ───────────────────────────────────────────────
@@ -879,16 +513,11 @@
               stroke-width="1.5" stroke-linejoin="round" style="--kind:${kind.color}"
               aria-hidden="true">${kind.glyph}</svg>`;
 
-      // Start the library download in parallel with the file itself.
-      const needs = XLSX_EXTS.includes(ext) ? CDN.xlsx
-                  : ZIP_EXTS.includes(ext)  ? CDN.jszip
-                  : STL_EXTS.includes(ext)  ? CDN.three
-                  : MD_EXTS.includes(ext)   ? CDN.marked
-                  : CSV_EXTS.includes(ext)  ? null
-                  : LANGS[ext]              ? CDN.hljs : null;
+      // Preload the right library alongside the file rather than after it.
+      const needs = MD_EXTS.includes(ext) ? CDN.marked
+                  : CSV_EXTS.includes(ext) ? null
+                  : LANGS[ext] ? CDN.hljs : null;
       const libReady = needs ? loadScript(needs).catch(() => null) : Promise.resolve();
-
-      const isBinary = BINARY.includes(ext);
 
       let res;
       try {
@@ -910,35 +539,14 @@
       const size = Number(res.headers.get('Content-Length')) || 0;
       if (size) $('file-meta').textContent = `${ext.toUpperCase()} · ${humanSize(size)}`;
 
-      const cap = isBinary ? MAX_BINARY : MAX_TEXT;
-      if (size > cap) {
+      if (size > MAX_BYTES) {
         note(`<strong>Too large to preview</strong>
               This file is ${humanSize(size)}; the viewer caps previews at
-              ${humanSize(cap)} so the page stays responsive.
+              ${humanSize(MAX_BYTES)} so the page stays responsive.
               <br><a class="file-btn" href="${escapeHtml(src)}" download>Download raw</a>`);
         return;
       }
 
-      // ---- binary formats ----
-      if (isBinary) {
-        let buf;
-        try {
-          buf = await res.arrayBuffer();
-        } catch {
-          note(`<strong>Couldn't read this file</strong>
-                <br><a class="file-btn" href="${escapeHtml(src)}" download>Download raw</a>`);
-          return;
-        }
-        if (!size) $('file-meta').textContent = `${ext.toUpperCase()} · ${humanSize(buf.byteLength)}`;
-
-        await libReady;
-        if (XLSX_EXTS.includes(ext))     renderWorkbook(buf);
-        else if (ZIP_EXTS.includes(ext)) await renderArchive(buf);
-        else                             renderSTL(buf);
-        return;
-      }
-
-      // ---- text formats ----
       let text;
       try {
         text = await res.text();
