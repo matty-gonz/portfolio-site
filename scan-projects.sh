@@ -97,21 +97,19 @@ is_known() {
   grep -Fxq "$1" "$KNOWN_FILE"
 }
 
-# Percent-encode the characters that break a URL if left raw.
-# `#` is the dangerous one — it starts the fragment, so
-# ".../Test #2.jpeg" is fetched as ".../Test " and 404s. Spaces work in
-# practice but are encoded for consistency. `%` must be substituted
-# first or it would double-encode the ones added after it.
+# Encode only the characters that genuinely break a URL, so projects.json
+# stays readable. `#` starts the fragment — ".../Test #2.jpeg" is fetched
+# as ".../Test " and 404s. `?` starts the query string. `%` has to go
+# first or it would double-encode the escapes added after it.
+#
+# Spaces, parentheses and brackets are deliberately left alone: browsers
+# encode them automatically in a src, and "Completed Build.jpeg" is much
+# easier to scan than "Completed%20Build.jpeg" when you're hand-editing.
 urlenc() {
   local s="$1"
   s="${s//%/%25}"
   s="${s//#/%23}"
   s="${s//\?/%3F}"
-  s="${s// /%20}"
-  s="${s//\[/%5B}"
-  s="${s//\]/%5D}"
-  s="${s//(/%28}"
-  s="${s//)/%29}"
   printf '%s' "$s"
 }
 
@@ -170,10 +168,13 @@ for project_folder in "$MEDIA_DIR"/*/; do
   for ext in $IMAGE_EXTS; do
     for f in "$project_folder"*."$ext"; do
       [ -f "$f" ] || continue
+      base=$(basename "$f")
+
       # Compare on the raw form (the known-list is percent-decoded) but
       # emit the encoded form.
-      raw="$R2_BASE/$id/$(basename "$f")"
-      url="$R2_BASE/$(urlenc "$id")/$(urlenc "$(basename "$f")")"
+      raw="$R2_BASE/$id/$base"
+      url="$R2_BASE/$(urlenc "$id")/$(urlenc "$base")"
+
       if is_known "$raw"; then
         img_known=$((img_known + 1))
       else

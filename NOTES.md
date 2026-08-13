@@ -77,6 +77,50 @@ pick this back up:
   media is a different origin. Harmless, but real control over filenames
   would need `Content-Disposition` set on the R2 objects.
 
+## Image delivery
+
+Images are resized on the fly by Cloudflare Transformations rather than
+served at full size. `imgURL(src, width)` in `projects/project.html` wraps
+each src as `/cdn-cgi/image/width=N,quality=82,format=auto/<src>`.
+
+Sizes: filmstrip 160px, gallery 700px, lightbox 1800px.
+
+**Required Cloudflare setting.** Images → Transformations → Settings →
+Sources must allow `media.matthewjgonzalez.me`. "Specified origins" with
+only `matthewjgonzalez.me` does NOT cover subdomains — that produces:
+
+```
+HTTP/2 403
+cf-resized: err=9401
+ERROR 9401: Transformation origin is not in allowed origins list
+```
+
+Check it with:
+
+```bash
+curl -sI "https://matthewjgonzalez.me/cdn-cgi/image/width=160,quality=82,format=auto/https://media.matthewjgonzalez.me/<project>/<file>" \
+  | grep -iE "^HTTP|content-type|cf-resized"
+```
+
+Want `200` and `image/webp`. Free tier is 5,000 unique transformations a
+month; this library uses ~90 and they're edge-cached after the first hit.
+
+Every `<img>` falls back to the untransformed original on error, so a
+misconfiguration degrades to "slow" rather than "broken". Setting
+`IMG_CDN = false` in `project.html` bypasses the whole thing.
+
+## Video posters — not doing this
+
+`<video>` shows black until it decodes a frame. Cloudflare Media
+Transformations (`/cdn-cgi/media/mode=frame`) would fix it with no extra
+files, but that endpoint 404s on this zone — it's a separate product from
+Image Transformations and enabling one doesn't enable the other. Check
+Stream → Transformations if you want to revisit.
+
+The alternative is generating poster JPEGs by hand and uploading them
+alongside each video, which adds a step to the media workflow. Decided
+against it. Reverted Aug 2026.
+
 ## Attachment schema
 
 ```json

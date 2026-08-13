@@ -501,6 +501,11 @@
       return `/cdn-cgi/image/width=${width},quality=82,format=auto/${src}`;
     }
 
+    // Video posters were tried via Cloudflare Media Transformations
+    // (/cdn-cgi/media/mode=frame) but that endpoint 404s on this zone —
+    // it's a separate product from Image Transformations. Reverted rather
+    // than adding a manual poster-file step to the media workflow.
+
     // Swap to the untransformed original on first failure, hide on second.
     const IMG_FALLBACK =
       "if(!this.dataset.fb){this.dataset.fb=1;this.src=this.dataset.raw;}" +
@@ -888,7 +893,7 @@
               const el = isVid
                 ? `<div class="gallery-video-wrap" data-index="${i}">
                      <video class="gallery-video" muted loop playsinline preload="metadata">
-                       <source src="${item.src}">
+                       <source src="${item.src}#t=1">
                      </video>
                      <div class="gallery-play-icon"></div>
                    </div>`
@@ -906,9 +911,17 @@
             }).join('');
 
             // autoplay video thumbnails on hover
+            // The `#t=1` media fragment on the source makes the browser seek
+            // to one second and render that frame instead of showing black
+            // while it waits. Side effect: playback would otherwise start at
+            // 1s too, so rewind before playing.
             gallery.addEventListener('mouseenter', e => {
               const wrap = e.target.closest('.gallery-video-wrap');
-              if (wrap) wrap.querySelector('video').play();
+              if (wrap) {
+                const v = wrap.querySelector('video');
+                v.currentTime = 0;
+                v.play();
+              }
             }, true);
             gallery.addEventListener('mouseleave', e => {
               const wrap = e.target.closest('.gallery-video-wrap');
