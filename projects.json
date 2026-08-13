@@ -12,6 +12,8 @@
     ],
 
     "thumbnail": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Test %232.jpeg",
+    "thumbnail_hover": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Test 2 Loop.mov",
+
 
     "images": [
       { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Completed Build.jpeg", "caption": "Completed plexiglass platform / scale, with electronics box on the left and ignition / motors on the right. The final build omitted the wooden platform connecting the box and scale for simplicity, but otherwise the scale was constructed as designed in the schematic." },
