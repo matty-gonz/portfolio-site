@@ -16,34 +16,38 @@
     /* ── HEADER ───────────────────────────────────────────── */
     .file-head {
       display: flex;
-      align-items: flex-start;
-      gap: 0.85rem;
-      padding-bottom: 1rem;
+      align-items: center;
+      gap: 1.05rem;
+      padding: 0.25rem 0 1.35rem;
       border-bottom: 1px solid var(--border);
-      margin-bottom: 1.25rem;
+      margin-bottom: 1.6rem;
     }
     .file-glyph {
       flex: 0 0 auto;
-      width: 26px;
-      height: 31px;
+      width: 23px;
+      height: 27px;
       color: var(--kind, var(--accent));
-      margin-top: 2px;
     }
     .file-head-text { flex: 1; min-width: 0; }
+
+    /* These are spans, so they need display:block or the filename and the
+       metadata run together on one line. */
     .file-name {
+      display: block;
       font-family: 'Nanum Gothic', sans-serif;
-      font-size: 1.05rem;
-      line-height: 1.3;
+      font-size: 1.02rem;
+      line-height: 1.35;
       color: var(--text);
       word-break: break-word;
     }
     .file-meta {
+      display: block;
       font-family: 'Nanum Gothic Coding', monospace;
-      font-size: 0.58rem;
-      letter-spacing: 0.18em;
+      font-size: 0.57rem;
+      letter-spacing: 0.2em;
       text-transform: uppercase;
       color: var(--text-muted);
-      margin-top: 5px;
+      margin-top: 7px;
     }
     .file-actions { flex: 0 0 auto; display: flex; gap: 0.5rem; }
     .file-btn {
@@ -55,7 +59,7 @@
       background: var(--accent-dim);
       border: 1px solid rgba(126,200,227,0.18);
       border-radius: 3px;
-      padding: 6px 14px;
+      padding: 8px 17px;
       cursor: pointer;
       text-decoration: none;
       white-space: nowrap;
@@ -347,8 +351,8 @@
         ext: ['ino','py','c','h','cpp','hpp','js','ts','java','cs','m','rb','go',
               'rs','sh','ipynb','json','xml','yml','yaml','html','css','sql'],
         color: '#6ee7a8',
-        glyph: `<path d="M4.5 5.5 10 13 4.5 20.5" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M11.5 20.5h6" stroke-linecap="round"/>`
+        glyph: `<path d="M4.5 7 10.5 13 4.5 19" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M12 19h5.5" stroke-linecap="round"/>`
       },
       data: {
         ext: ['csv','tsv','xlsx','xls','numbers','db','sqlite','mat'],
