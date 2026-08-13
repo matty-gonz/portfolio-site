@@ -416,7 +416,8 @@
       <div class="lb-filmstrip" id="lb-filmstrip"></div>
     </div>
     <div class="lb-img-wrap">
-      <img class="lb-img" id="lb-img" src="" alt="" style="display:none;">
+      <img class="lb-img" id="lb-img" src="" alt="" style="display:none;"
+           onerror="if(!this.dataset.fb&&this.dataset.raw){this.dataset.fb=1;this.src=this.dataset.raw;}">
       <video class="lb-video" id="lb-video" controls style="display:none;"></video>
     </div>
     <div class="lb-caption-box">
@@ -721,8 +722,11 @@
       preloadAdjacent(lbIndex);
 
       // caption box
-      const rawName = src.split('/').pop().replace(/\.[^.]+$/, ''); // strip path + extension
-      const title   = rawName;
+      // Decode before displaying — srcs are percent-encoded, so without
+      // this the caption reads "D12-3%20%28Test%20%232%29" instead of
+      // "D12-3 (Test #2)".
+      const rawName = src.split('/').pop().replace(/\.[^.]+$/, '');
+      const title   = fileLabel(src) || rawName;
       document.getElementById('lb-caption-title').textContent = title;
       document.getElementById('lb-caption-text').textContent  = caption;
     }
