@@ -1,0 +1,98 @@
+# Portfolio site — state & open work
+
+Working notes. Update as things change.
+
+## How the site is wired
+
+| Hostname | Cloudflare tunnel → | nginx block | Doc root | Branch |
+|---|---|---|---|---|
+| `matthewjgonzalez.me` | `localhost:80` | `sites-available/default` | `/var/www/html` | `main` |
+| `dev.matthewjgonzalez.me` | `localhost:8081` | `sites-available/staging` | `/var/www/staging` | `dev` |
+
+- Media (images, video, PDFs, any attachment) lives in the R2 bucket
+  `portfolio-media`, served at `media.matthewjgonzalez.me`.
+- The pi runs `/usr/local/bin/site-pull` once a minute per site via root's
+  crontab. It only reloads nginx when the branch HEAD actually moves.
+- Auth to GitHub is an SSH key (`~/.ssh/id_ed25519_github`). The old
+  personal access token was retired Aug 2026.
+- `dev.matthewjgonzalez.me` is behind Cloudflare Access — email one-time
+  code, `ma110919@ucf.edu` only.
+
+## Deploy commands
+
+Defined in `pi/portfolio.zsh`, sourced from `~/.zshrc`. Always work on `dev`.
+
+```
+deploy-dev "message"   # local -> dev.matthewjgonzalez.me
+deploy                 # promote dev -> main -> live (confirms first)
+deploy-rollback        # revert the last live commit
+```
+
+`deploy-dev` refuses to run if `projects.json` is invalid JSON.
+
+## Gotchas that have already bitten
+
+- **Unescaped `"` in a caption** breaks all of `projects.json`, and the
+  project page reports it as "Project not found" — which sends you hunting
+  in the wrong place. Write `1/2\"` or just say "1/2 inch".
+- **Attaching site files to a Claude chat creates hardlinks**, which makes
+  TextEdit refuse to save them ("you don't have permission"). Fix:
+  `find . -type f -links +1 -not -path "./.git/*"` then replace each with a
+  copy of itself. Better: don't attach files, the folder is connected.
+- **`.git/index.lock` left behind** by an interrupted git process blocks all
+  git operations. Safe to `rm -f` when nothing is actually running.
+
+## Open work — deferred
+
+### Document previews (deferred Aug 2026)
+
+Non-PDF attachments currently download instead of opening. Plan when we
+pick this back up:
+
+1. **Prerequisite: R2 CORS.** Allow `https://matthewjgonzalez.me` on the
+   `portfolio-media` bucket. This also unblocks the file-size display on
+   attachment chips, which currently fails silently.
+2. **`viewer.html`** — new tab, fetches the file, renders:
+   - code (`.ino .py .c .h .json`) syntax-highlighted with line numbers
+   - `.md` rendered rather than raw
+   - `.csv` as a real table
+   - a "download raw" button
+3. **STL viewer** via three.js STLLoader — rotatable 3D preview.
+4. **Not feasible:** STEP, F3D, SLDPRT. No browser-side reader worth the
+   weight. Export an STL alongside, or add a public OnShape link as its
+   own chip.
+
+### Smaller items
+
+- `.see-more-btn` and `.section-label` in `custom.css` / `project.html`
+  declare `font-family: 'DM Mono'`, which no page actually loads. They fall
+  back to whatever monospace the browser picks, so they render differently
+  across devices. Either load DM Mono or switch them to Nanum Gothic
+  Coding (which is loaded, and is what the attachment chips use).
+- The `download` attribute on non-viewable attachments is ignored because
+  media is a different origin. Harmless, but real control over filenames
+  would need `Content-Disposition` set on the R2 objects.
+
+## Attachment schema
+
+```json
+"documents": [
+  { "src": "https://media.matthewjgonzalez.me/<project>/File.pdf",
+    "title": "Human readable name",
+    "caption": "Optional one-or-two-line description." }
+]
+```
+
+Only `src` is required. Missing `title` falls back to the filename.
+Missing or blank `caption` renders a compact chip with no description
+line. Omit the whole `documents` key for projects with no attachments.
+
+## Adding an attachment type
+
+1. Add the extension to the right `DOC_EXTS_*` list in `scan-projects.sh`.
+2. If it should get a specific icon rather than the generic page, add it to
+   the matching `ext` array in `FILE_KINDS` at the top of
+   `projects/project.html`.
+
+Kinds: `doc` (cyan), `code` (green), `model` (amber), `data` (violet),
+`archive` (slate). Unknown extensions fall back to `doc` and still work.

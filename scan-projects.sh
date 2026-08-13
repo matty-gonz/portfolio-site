@@ -71,9 +71,10 @@ for project_folder in "$MEDIA_DIR"/*/; do
       [ -f "$f" ] || continue
       name=$(basename "$f")
       # Pre-fill the title with the filename minus extension, so you
-      # usually only have to tidy it rather than type it out.
+      # usually only have to tidy it rather than type it out. Caption is
+      # left blank — fill it in or delete the key entirely.
       title="${name%.*}"
-      documents+=("    { \"src\": \"$R2_BASE/$id/$name\", \"title\": \"$title\" }")
+      documents+=("    { \"src\": \"$R2_BASE/$id/$name\", \"title\": \"$title\", \"caption\": \"\" }")
     done
   done
 

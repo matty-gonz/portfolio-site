@@ -177,6 +177,36 @@
       margin-top: 2px;
     }
 
+    /* Optional one-line-ish description. Chips without a caption keep the
+       original compact shape; captioned ones widen and cap the text at two
+       lines so one long description can't dwarf the rest of the row. */
+    .doc-caption {
+      font-family: 'Nanum Gothic', sans-serif;
+      font-size: 0.72rem;
+      line-height: 1.35;
+      color: var(--text-muted);
+      margin-top: 3px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .doc-chip.has-caption {
+      align-items: flex-start;
+      max-width: 340px;
+    }
+    .doc-chip.has-caption .doc-glyph { margin-top: 1px; }
+    .doc-chip.has-caption .doc-sub   { margin-top: 5px; }
+
+    /* Without a caption the title can't wrap, so ellipsis it. With one,
+       let it wrap — the chip is wider and there's room. */
+    .doc-chip.has-caption .doc-title {
+      white-space: normal;
+      overflow: visible;
+    }
+
     @media (max-width: 576px) {
       .doc-chip { width: 100%; }
     }
@@ -817,15 +847,18 @@
             docRow.innerHTML = docs.map((d, i) => {
               const src   = typeof d === 'string' ? d : d.src;
               if (!src) return '';
-              const title = (typeof d === 'object' && d.title) ? d.title : fileLabel(src);
+              const title   = (typeof d === 'object' && d.title) ? d.title : fileLabel(src);
+              const caption = (typeof d === 'object' && d.caption) ? d.caption.trim() : '';
               const k = FILE_KINDS[kindOf(src)];
               return `
-                <a class="doc-chip" href="${escapeHtml(src)}" ${linkAttrs(src)}
+                <a class="doc-chip${caption ? ' has-caption' : ''}"
+                   href="${escapeHtml(src)}" ${linkAttrs(src)}
                    data-kind="${kindOf(src)}"
                    style="--kind:${k.color};--kind-dim:${k.dim}">
                   ${glyphFor(src)}
                   <span class="doc-text">
                     <span class="doc-title">${escapeHtml(title)}</span>
+                    ${caption ? `<span class="doc-caption">${escapeHtml(caption)}</span>` : ''}
                     <span class="doc-sub" data-doc-sub="${i}">${escapeHtml(fileExt(src))}</span>
                   </span>
                 </a>`;
