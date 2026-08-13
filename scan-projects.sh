@@ -192,7 +192,7 @@ for project_folder in "$MEDIA_DIR"/*/; do
       if is_known "$raw"; then
         doc_known=$((doc_known + 1))
       else
-        documents+=("    { \"src\": \"$url\", \"title\": \"${name%.*}\", \"caption\": \"\" }")
+        documents+=("    { \"src\": \"$url\", \"title\": \"${name%.*}\" }")
       fi
     done
   done

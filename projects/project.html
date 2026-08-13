@@ -115,23 +115,21 @@
     /* ── DOCUMENT ATTACHMENTS ─────────────────────────────── */
     /* Row of file chips below the gallery toggle. Renders nothing
        at all when a project has no `documents` array. */
-    /* Grid rather than flex-wrap so chips share the full content width
-       evenly instead of stopping partway across and leaving a ragged
-       right edge. Columns collapse 3 -> 2 -> 1 as the page narrows. */
+    /* Chips size to their own content and wrap. A stretched grid made
+       them read as cards; sized to content they read as tags. */
     .doc-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(100%, 245px), 1fr));
-      gap: 0.55rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
       margin-top: 1.15rem;
-      align-items: stretch;
     }
     .doc-row:empty { display: none; }
 
     .doc-chip {
       display: flex;
       align-items: center;
-      gap: 0.6rem;
-      padding: 0.5rem 0.75rem 0.5rem 0.65rem;
+      gap: 0.5rem;
+      padding: 0.42rem 0.7rem 0.42rem 0.58rem;
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 4px;
@@ -149,8 +147,8 @@
 
     .doc-glyph {
       flex: 0 0 auto;
-      width: 16px;
-      height: 19px;
+      width: 15px;
+      height: 18px;
       /* Muted at rest so a row of chips stays calm; full colour on hover. */
       color: var(--kind, var(--text-muted));
       opacity: 0.62;
@@ -165,8 +163,8 @@
     }
     .doc-title {
       font-family: 'Nanum Gothic', sans-serif;
-      font-size: 0.76rem;
-      line-height: 1.3;
+      font-size: 0.74rem;
+      line-height: 1.25;
       color: inherit;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -174,39 +172,11 @@
     }
     .doc-sub {
       font-family: 'Nanum Gothic Coding', monospace;
-      font-size: 0.55rem;
+      font-size: 0.53rem;
       letter-spacing: 0.16em;
       text-transform: uppercase;
       color: var(--text-muted);
-      margin-top: 2px;
-    }
-
-    /* Optional one-line-ish description. Chips without a caption keep the
-       original compact shape; captioned ones widen and cap the text at two
-       lines so one long description can't dwarf the rest of the row. */
-    .doc-caption {
-      font-family: 'Nanum Gothic', sans-serif;
-      font-size: 0.67rem;
-      line-height: 1.4;
-      color: var(--text-muted);
-      margin-top: 3px;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-
-    /* Icon centres against the whole text block, captioned or not. Top-
-       aligning it (the mail-client convention) left it looking adrift
-       against a three-line chip. */
-    .doc-chip.has-caption .doc-sub { margin-top: 5px; }
-
-    /* Without a caption the title can't wrap, so ellipsis it. With one,
-       let it wrap — the chip is wider and there's room. */
-    .doc-chip.has-caption .doc-title {
-      white-space: normal;
-      overflow: visible;
+      margin-top: 1px;
     }
 
     @media (max-width: 576px) {
@@ -530,13 +500,11 @@
         ext: ['ino', 'py', 'c', 'h', 'cpp', 'hpp', 'js', 'ts', 'java', 'cs',
               'm', 'rb', 'go', 'rs', 'sh', 'ipynb', 'json', 'xml', 'yml', 'yaml'],
         color: '#6ee7a8', dim: 'rgba(110,231,168,0.38)',
-        // Chevrons are naturally wide and short, which read as "squished"
-        // next to the taller page glyph. Pulled in horizontally and
-        // stretched vertically to 15w x 19h, matching the document icon's
-        // 16x21 proportions.
-        glyph: `<path d="M8.5 5 3.5 13 8.5 21" stroke-linecap="round"/>
-                <path d="M13.5 5 18.5 13 13.5 21" stroke-linecap="round"/>
-                <path d="M12.6 3.5l-3.2 19" stroke-linecap="round"/>`
+        // Terminal prompt. Two strokes instead of three reads far cleaner
+        // at 15px than a crammed `</>`. 13w x 15h, centred on (11, 13)
+        // like the rest.
+        glyph: `<path d="M4.5 5.5 10 13 4.5 20.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M11.5 20.5h6" stroke-linecap="round"/>`
       },
       model: {
         ext: ['step', 'stp', 'stl', 'f3d', 'sldprt', 'sldasm', 'iges', 'igs',
@@ -593,16 +561,32 @@
       return m ? m[1].toUpperCase() : 'FILE';
     }
 
-    // Types a browser can actually render. Everything else (.ino, .step,
-    // .zip, CAD files) gets the `download` attribute instead of
-    // target="_blank", so it saves straight to Downloads rather than
-    // flashing a blank tab on its way there.
-    const VIEWABLE = ['PDF', 'PNG', 'JPG', 'JPEG', 'GIF', 'WEBP', 'SVG', 'TXT', 'MD'];
+    // Types the browser renders natively — straight to a new tab.
+    const NATIVE = ['PDF', 'PNG', 'JPG', 'JPEG', 'GIF', 'WEBP', 'SVG'];
+
+    // Text-ish types viewer.html can present properly: highlighted code,
+    // rendered Markdown, CSV as a table. Without the viewer these would
+    // dump raw text into a tab or silently download.
+    const IN_VIEWER = [
+      'INO','PY','C','H','CPP','HPP','JS','TS','JAVA','CS','M','RB','GO','RS',
+      'SH','JSON','XML','YML','YAML','HTML','CSS','SQL',
+      'TXT','MD','MARKDOWN','CSV','TSV'
+    ];
+
+    // Which URL a chip actually points at.
+    function chipHref(src, title) {
+      if (!IN_VIEWER.includes(fileExt(src))) return src;
+      const q = new URLSearchParams({ src });
+      if (title) q.set('title', title);
+      if (id)    q.set('from', id);      // so the viewer's back link returns here
+      return `viewer.html?${q}`;
+    }
 
     function linkAttrs(src) {
-      return VIEWABLE.includes(fileExt(src))
-        ? 'target="_blank" rel="noopener noreferrer"'
-        : 'download';
+      const ext = fileExt(src);
+      if (IN_VIEWER.includes(ext)) return 'target="_blank" rel="noopener noreferrer"';
+      if (NATIVE.includes(ext))    return 'target="_blank" rel="noopener noreferrer"';
+      return 'download';
     }
 
     // main-4.js has its own copy of this, but it's scoped inside a block
@@ -969,18 +953,15 @@
             docRow.innerHTML = docs.map((d, i) => {
               const src   = typeof d === 'string' ? d : d.src;
               if (!src) return '';
-              const title   = (typeof d === 'object' && d.title) ? d.title : fileLabel(src);
-              const caption = (typeof d === 'object' && d.caption) ? d.caption.trim() : '';
+              const title = (typeof d === 'object' && d.title) ? d.title : fileLabel(src);
               const k = FILE_KINDS[kindOf(src)];
               return `
-                <a class="doc-chip${caption ? ' has-caption' : ''}"
-                   href="${escapeHtml(src)}" ${linkAttrs(src)}
+                <a class="doc-chip" href="${escapeHtml(chipHref(src, title))}" ${linkAttrs(src)}
                    data-kind="${kindOf(src)}"
                    style="--kind:${k.color};--kind-dim:${k.dim}">
                   ${glyphFor(src)}
                   <span class="doc-text">
                     <span class="doc-title">${escapeHtml(title)}</span>
-                    ${caption ? `<span class="doc-caption">${escapeHtml(caption)}</span>` : ''}
                     <span class="doc-sub" data-doc-sub="${i}">${escapeHtml(fileExt(src))}</span>
                   </span>
                 </a>`;

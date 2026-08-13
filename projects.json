@@ -47,10 +47,10 @@
     ],
 
     "documents": [
-      { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Static Fire Rocket Platform - Schematic.pdf", "title": "Static Fire Rocket Platform - Schematic", "caption": "" },
-      { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/thrust_logger.ino", "title": "thrust_logger", "caption": "Program ran on Arduino during tests." },
-      { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Static Fire Rocket Project - Raw Data.zip", "title": "Static Fire Rocket Project - Raw Data", "caption": "The raw .csv and .xlsx files created by the electronics during testing." },
-      { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Static Fire Rocket Project - Data Analysis.xlsx", "title": "Static Fire Rocket Project - Data Analysis", "caption": "Excel file containing all the raw data converted to readable data, and complete analysis." }
+      { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Static Fire Rocket Platform - Schematic.pdf", "title": "Static Fire Rocket Platform - Schematic" },
+      { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/thrust_logger.ino", "title": "thrust_logger" },
+      { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Static Fire Rocket Project - Raw Data.zip", "title": "Static Fire Rocket Project - Raw Data" },
+      { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Static Fire Rocket Project - Data Analysis.xlsx", "title": "Static Fire Rocket Project - Data Analysis" }
     ],
 
     "date_start": "2026-05",

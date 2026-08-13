@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html data-bs-theme="light" lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Matthew Julian González — File</title>
+  <link rel="stylesheet" href="../assets/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Acme&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Kanit&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nanum+Gothic&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nanum+Gothic+Coding&display=swap">
+  <link rel="stylesheet" href="../assets/css/bss-overrides.css">
+  <link rel="stylesheet" href="../assets/css/custom.css">
+  <style>
+    /* ── HEADER ───────────────────────────────────────────── */
+    .file-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.85rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 1.25rem;
+    }
+    .file-glyph {
+      flex: 0 0 auto;
+      width: 26px;
+      height: 31px;
+      color: var(--kind, var(--accent));
+      margin-top: 2px;
+    }
+    .file-head-text { flex: 1; min-width: 0; }
+    .file-name {
+      font-family: 'Nanum Gothic', sans-serif;
+      font-size: 1.05rem;
+      line-height: 1.3;
+      color: var(--text);
+      word-break: break-word;
+    }
+    .file-meta {
+      font-family: 'Nanum Gothic Coding', monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 5px;
+    }
+    .file-actions { flex: 0 0 auto; display: flex; gap: 0.5rem; }
+    .file-btn {
+      font-family: 'Nanum Gothic Coding', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: var(--accent-dim);
+      border: 1px solid rgba(126,200,227,0.18);
+      border-radius: 3px;
+      padding: 6px 14px;
+      cursor: pointer;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .file-btn:hover {
+      background: rgba(126,200,227,0.18);
+      border-color: rgba(126,200,227,0.4);
+      color: var(--accent);
+    }
+
+    /* ── CODE ─────────────────────────────────────────────── */
+    .code-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: auto;
+      max-height: 74vh;
+    }
+    .code-table {
+      border-collapse: collapse;
+      font-family: 'Nanum Gothic Coding', ui-monospace, monospace;
+      font-size: 0.78rem;
+      line-height: 1.6;
+      width: 100%;
+    }
+    /* Line numbers in their own cell so they can't be selected along with
+       the code — copying out of this viewer should give you the source,
+       not source with numbers glued to the front of every line. */
+    .code-table td.ln {
+      user-select: none;
+      text-align: right;
+      padding: 0 0.85rem 0 0.9rem;
+      color: var(--text-dim);
+      background: rgba(255,255,255,0.012);
+      border-right: 1px solid var(--border);
+      width: 1%;
+      white-space: nowrap;
+      vertical-align: top;
+    }
+    .code-table td.src {
+      padding: 0 1rem 0 0.9rem;
+      color: var(--text);
+      white-space: pre;
+      vertical-align: top;
+    }
+    .code-table tr:first-child td { padding-top: 0.8rem; }
+    .code-table tr:last-child  td { padding-bottom: 0.8rem; }
+
+    /* Minimal highlight.js theme built from the site's own tokens rather
+       than pulling in a stock stylesheet that would clash. */
+    .hljs-keyword, .hljs-selector-tag, .hljs-built_in,
+    .hljs-literal, .hljs-meta-keyword          { color: #b39dfa; }
+    .hljs-string, .hljs-regexp, .hljs-addition  { color: #6ee7a8; }
+    .hljs-number, .hljs-symbol                  { color: #f2b366; }
+    .hljs-comment, .hljs-quote                  { color: rgba(255,255,255,0.3); font-style: italic; }
+    .hljs-title, .hljs-name, .hljs-section      { color: #16c1ff; }
+    .hljs-attr, .hljs-attribute, .hljs-variable { color: #9fd8ee; }
+    .hljs-meta                                  { color: rgba(255,255,255,0.4); }
+    .hljs-type, .hljs-class .hljs-title         { color: #f2b366; }
+    .hljs-deletion                              { color: #ff8a8a; }
+
+    /* ── MARKDOWN ─────────────────────────────────────────── */
+    .md-body {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1.6rem 1.8rem;
+      color: var(--text);
+      font-family: 'Nanum Gothic', sans-serif;
+      line-height: 1.7;
+    }
+    .md-body h1, .md-body h2, .md-body h3 {
+      font-family: 'Kanit', sans-serif;
+      color: var(--text);
+      margin-top: 1.8rem;
+      margin-bottom: 0.7rem;
+    }
+    .md-body h1 { font-size: 1.5rem; }
+    .md-body h2 { font-size: 1.2rem; }
+    .md-body h3 { font-size: 1rem; }
+    .md-body > *:first-child { margin-top: 0; }
+    .md-body a { color: var(--accent); }
+    .md-body code {
+      font-family: 'Nanum Gothic Coding', monospace;
+      font-size: 0.85em;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 1px 5px;
+      color: var(--text);
+    }
+    .md-body pre {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.9rem 1.1rem;
+      overflow-x: auto;
+    }
+    .md-body pre code { background: none; border: 0; padding: 0; }
+    .md-body blockquote {
+      border-left: 2px solid var(--border-hover);
+      margin-left: 0;
+      padding-left: 1rem;
+      color: var(--text-muted);
+    }
+    .md-body table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+    .md-body th, .md-body td {
+      border: 1px solid var(--border);
+      padding: 0.4rem 0.7rem;
+      text-align: left;
+    }
+    .md-body th { background: var(--surface-2); }
+    .md-body img { max-width: 100%; border-radius: 4px; }
+
+    /* ── CSV TABLE ────────────────────────────────────────── */
+    .csv-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: auto;
+      max-height: 74vh;
+    }
+    .csv-table {
+      border-collapse: collapse;
+      font-family: 'Nanum Gothic Coding', monospace;
+      font-size: 0.74rem;
+      width: 100%;
+    }
+    .csv-table th, .csv-table td {
+      padding: 0.4rem 0.8rem;
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      white-space: nowrap;
+      text-align: left;
+    }
+    .csv-table th {
+      position: sticky;
+      top: 0;
+      background: #0d1017;
+      color: var(--text);
+      font-weight: normal;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 0.62rem;
+      z-index: 1;
+    }
+    .csv-table td { color: var(--text-muted); }
+    .csv-table tr:hover td { color: var(--text); background: rgba(255,255,255,0.015); }
+    .csv-rownum {
+      color: var(--text-dim) !important;
+      text-align: right !important;
+      user-select: none;
+      background: rgba(255,255,255,0.012);
+    }
+
+    /* ── STATES ───────────────────────────────────────────── */
+    .v-note {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2rem 1.8rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-family: 'Nanum Gothic', sans-serif;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+    .v-note strong { color: var(--text); display: block; margin-bottom: 0.5rem; font-weight: normal; }
+    .v-note .file-btn { display: inline-block; margin-top: 1.1rem; }
+    .v-note code {
+      font-family: 'Nanum Gothic Coding', monospace;
+      font-size: 0.8em;
+      color: var(--text);
+    }
+
+    @media (max-width: 576px) {
+      .file-head { flex-wrap: wrap; }
+      .file-actions { width: 100%; }
+      .code-table { font-size: 0.7rem; }
+    }
+  </style>
+</head>
+
+<body><canvas id="stars"></canvas>
+  <nav class="navbar navbar-expand-lg fixed-top">
+    <div class="container">
+      <a class="navbar-brand" href="../index.html"><strong>Matthew Julian González</strong></a>
+      <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navMenu" type="button">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link active" href="../index.html">Portfolio</a></li>
+          <li class="nav-item"><a class="nav-link" href="../about.html">About</a></li>
+          <li class="nav-item"><a class="nav-link" href="../contact.html">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <div class="container py-5">
+      <div class="row justify-content-center">
+        <div class="col-12 col-lg-11">
+          <a class="back-link" href="#" id="back-link">← Back</a>
+
+          <div class="file-head">
+            <span id="head-glyph"></span>
+            <span class="file-head-text">
+              <span class="file-name" id="file-name">Loading…</span>
+              <span class="file-meta" id="file-meta"></span>
+            </span>
+            <span class="file-actions">
+              <a class="file-btn" id="raw-btn" href="#" download>Download raw</a>
+            </span>
+          </div>
+
+          <div id="content"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="../assets/bootstrap/js/bootstrap.min.js"></script>
+  <script src="../assets/js/main-4.js"></script>
+  <script>
+    // ── CONFIG ─────────────────────────────────────────────
+    // Anything bigger than this renders as a download prompt instead.
+    // Highlighting a multi-megabyte file locks the tab for seconds.
+    const MAX_BYTES = 2 * 1024 * 1024;
+
+    const CDN = {
+      hljs: 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js',
+      marked: 'https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js'
+    };
+
+    // Extension -> highlight.js language id. Anything unlisted still
+    // renders, just without highlighting.
+    const LANGS = {
+      ino: 'cpp', c: 'c', h: 'c', cpp: 'cpp', hpp: 'cpp',
+      py: 'python', js: 'javascript', ts: 'typescript',
+      java: 'java', cs: 'csharp', rb: 'ruby', go: 'go', rs: 'rust',
+      sh: 'bash', m: 'matlab', json: 'json', xml: 'xml',
+      yml: 'yaml', yaml: 'yaml', html: 'xml', css: 'css', sql: 'sql'
+    };
+
+    const MD_EXTS  = ['md', 'markdown'];
+    const CSV_EXTS = ['csv', 'tsv'];
+
+    // ── HELPERS ────────────────────────────────────────────
+    const $ = id => document.getElementById(id);
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, c =>
+        ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+    }
+
+    function fileExt(src) {
+      const m = src.split('?')[0].match(/\.([a-z0-9]+)$/i);
+      return m ? m[1].toLowerCase() : '';
+    }
+
+    function fileLabel(src) {
+      try {
+        return decodeURIComponent(src.split('/').pop().split('?')[0]);
+      } catch { return 'File'; }
+    }
+
+    function humanSize(bytes) {
+      const n0 = Number(bytes);
+      if (!n0 || !isFinite(n0)) return '';
+      const units = ['B', 'KB', 'MB', 'GB'];
+      let n = n0, u = 0;
+      while (n >= 1024 && u < units.length - 1) { n /= 1024; u++; }
+      return (u === 0 || n >= 10 ? Math.round(n) : n.toFixed(1)) + ' ' + units[u];
+    }
+
+    // Same kind system as the project page, so a chip and its viewer show
+    // the same icon and colour.
+    const KINDS = {
+      doc: {
+        ext: ['pdf','doc','docx','txt','md','markdown','rtf'],
+        color: '#16c1ff',
+        glyph: `<path d="M3 2.5h10l6 6v15H3z"/><path d="M13 2.5v6h6"/>
+                <path d="M6.5 13.5h9M6.5 17.5h6" stroke-width="1.3" stroke-linecap="round"/>`
+      },
+      code: {
+        ext: ['ino','py','c','h','cpp','hpp','js','ts','java','cs','m','rb','go',
+              'rs','sh','ipynb','json','xml','yml','yaml','html','css','sql'],
+        color: '#6ee7a8',
+        glyph: `<path d="M4.5 5.5 10 13 4.5 20.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M11.5 20.5h6" stroke-linecap="round"/>`
+      },
+      data: {
+        ext: ['csv','tsv','xlsx','xls','numbers','db','sqlite','mat'],
+        color: '#b39dfa',
+        glyph: `<rect x="2.5" y="4.5" width="17" height="17" rx="1.5"/>
+                <path d="M2.5 9.5h17M8.2 9.5v12M13.8 9.5v12"/>`
+      }
+    };
+
+    function kindOf(ext) {
+      for (const [name, k] of Object.entries(KINDS)) if (k.ext.includes(ext)) return name;
+      return 'doc';
+    }
+
+    function loadScript(url) {
+      return new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = url;
+        s.onload = resolve;
+        s.onerror = () => reject(new Error('failed to load ' + url));
+        document.head.appendChild(s);
+      });
+    }
+
+    function note(html) { $('content').innerHTML = `<div class="v-note">${html}</div>`; }
+
+    // ── RENDERERS ──────────────────────────────────────────
+    function renderCode(text, ext) {
+      let html;
+      const lang = LANGS[ext];
+      if (window.hljs && lang && window.hljs.getLanguage(lang)) {
+        try {
+          html = window.hljs.highlight(text, { language: lang, ignoreIllegals: true }).value;
+        } catch { html = escapeHtml(text); }
+      } else {
+        html = escapeHtml(text);
+      }
+
+      // Split the highlighted markup by line. hljs can leave a span open
+      // across a newline, so reopen any unclosed spans on the next line —
+      // otherwise one multi-line comment swallows the colour of the rest
+      // of the file.
+      const rawLines = html.split('\n');
+      const lines = [];
+      let open = [];
+      for (const line of rawLines) {
+        const prefix = open.map(c => `<span class="${c}">`).join('');
+        const re = /<span class="([^"]*)">|<\/span>/g;
+        let m;
+        while ((m = re.exec(line)) !== null) {
+          if (m[0] === '</span>') open.pop();
+          else open.push(m[1]);
+        }
+        const suffix = '</span>'.repeat(open.length);
+        lines.push(prefix + line + suffix);
+      }
+
+      const rows = lines.map((l, i) =>
+        `<tr><td class="ln">${i + 1}</td><td class="src">${l || ' '}</td></tr>`
+      ).join('');
+
+      $('content').innerHTML = `<div class="code-wrap"><table class="code-table">${rows}</table></div>`;
+    }
+
+    function renderMarkdown(text) {
+      if (!window.marked) { renderCode(text, 'txt'); return; }
+      try {
+        const html = window.marked.parse(text, { breaks: false, gfm: true });
+        $('content').innerHTML = `<div class="md-body">${html}</div>`;
+      } catch {
+        renderCode(text, 'txt');
+      }
+    }
+
+    // Minimal RFC-4180 parser: handles quoted fields, embedded commas,
+    // escaped quotes and both line ending styles.
+    function parseDelimited(text, delim) {
+      const rows = [];
+      let row = [], field = '', inQuotes = false;
+      for (let i = 0; i < text.length; i++) {
+        const c = text[i];
+        if (inQuotes) {
+          if (c === '"') {
+            if (text[i + 1] === '"') { field += '"'; i++; }
+            else inQuotes = false;
+          } else field += c;
+        } else if (c === '"') {
+          inQuotes = true;
+        } else if (c === delim) {
+          row.push(field); field = '';
+        } else if (c === '\n') {
+          row.push(field); rows.push(row); row = []; field = '';
+        } else if (c !== '\r') {
+          field += c;
+        }
+      }
+      if (field !== '' || row.length) { row.push(field); rows.push(row); }
+      return rows.filter(r => r.length > 1 || r[0] !== '');
+    }
+
+    function renderTable(text, ext) {
+      const rows = parseDelimited(text, ext === 'tsv' ? '\t' : ',');
+      if (!rows.length) { note('<strong>Empty file</strong>Nothing to show.'); return; }
+
+      const [head, ...body] = rows;
+      const thead = '<tr><th class="csv-rownum"></th>' +
+        head.map(h => `<th>${escapeHtml(h)}</th>`).join('') + '</tr>';
+      const tbody = body.map((r, i) =>
+        `<tr><td class="csv-rownum">${i + 1}</td>` +
+        head.map((_, c) => `<td>${escapeHtml(r[c] ?? '')}</td>`).join('') +
+        '</tr>'
+      ).join('');
+
+      $('content').innerHTML =
+        `<div class="csv-wrap"><table class="csv-table">
+           <thead>${thead}</thead><tbody>${tbody}</tbody></table></div>`;
+
+      const meta = $('file-meta').textContent;
+      $('file-meta').textContent = meta + ` · ${body.length} rows × ${head.length} cols`;
+    }
+
+    // ── MAIN ───────────────────────────────────────────────
+    (async function () {
+      const params = new URLSearchParams(location.search);
+      const src    = params.get('src');
+      const title  = params.get('title');
+      const from   = params.get('from');
+
+      $('back-link').href = from ? `project.html?id=${encodeURIComponent(from)}` : '../index.html';
+      $('back-link').textContent = from ? '← Back to project' : '← Back to projects';
+
+      if (!src) {
+        $('file-name').textContent = 'No file specified';
+        note('<strong>Nothing to show</strong>This page needs a <code>?src=</code> parameter.');
+        return;
+      }
+
+      const ext  = fileExt(src);
+      const kind = KINDS[kindOf(ext)];
+      const name = title || fileLabel(src);
+
+      document.title = `Matthew Julian González — ${name}`;
+      $('file-name').textContent = name;
+      $('file-meta').textContent = ext.toUpperCase();
+      $('raw-btn').href = src;
+      $('head-glyph').innerHTML =
+        `<svg class="file-glyph" viewBox="0 0 22 26" fill="none" stroke="currentColor"
+              stroke-width="1.5" stroke-linejoin="round" style="--kind:${kind.color}"
+              aria-hidden="true">${kind.glyph}</svg>`;
+
+      // Preload the right library alongside the file rather than after it.
+      const needs = MD_EXTS.includes(ext) ? CDN.marked
+                  : CSV_EXTS.includes(ext) ? null
+                  : LANGS[ext] ? CDN.hljs : null;
+      const libReady = needs ? loadScript(needs).catch(() => null) : Promise.resolve();
+
+      let res;
+      try {
+        res = await fetch(src);
+      } catch (err) {
+        note(`<strong>Couldn't load this file</strong>
+              The request was blocked before it started — usually a CORS rule
+              on the media bucket. <br>The download button still works.
+              <br><a class="file-btn" href="${escapeHtml(src)}" download>Download raw</a>`);
+        return;
+      }
+
+      if (!res.ok) {
+        note(`<strong>File not found (${res.status})</strong>
+              The link may be out of date, or the file was renamed in storage.`);
+        return;
+      }
+
+      const size = Number(res.headers.get('Content-Length')) || 0;
+      if (size) $('file-meta').textContent = `${ext.toUpperCase()} · ${humanSize(size)}`;
+
+      if (size > MAX_BYTES) {
+        note(`<strong>Too large to preview</strong>
+              This file is ${humanSize(size)}; the viewer caps previews at
+              ${humanSize(MAX_BYTES)} so the page stays responsive.
+              <br><a class="file-btn" href="${escapeHtml(src)}" download>Download raw</a>`);
+        return;
+      }
+
+      let text;
+      try {
+        text = await res.text();
+      } catch {
+        note(`<strong>Couldn't read this file</strong>
+              It may be binary rather than text.
+              <br><a class="file-btn" href="${escapeHtml(src)}" download>Download raw</a>`);
+        return;
+      }
+
+      // A stray NUL byte is a reliable sign we've been handed a binary.
+      if (text.includes('\0')) {
+        note(`<strong>Not a text file</strong>
+              This looks like binary data, so there's nothing readable to show.
+              <br><a class="file-btn" href="${escapeHtml(src)}" download>Download raw</a>`);
+        return;
+      }
+
+      await libReady;
+
+      if (MD_EXTS.includes(ext))       renderMarkdown(text);
+      else if (CSV_EXTS.includes(ext)) renderTable(text, ext);
+      else                             renderCode(text, ext);
+
+      if (!size) {
+        const bytes = new TextEncoder().encode(text).length;
+        $('file-meta').textContent = `${ext.toUpperCase()} · ${humanSize(bytes)}`;
+      }
+    })();
+  </script>
+</body>
+
+</html>

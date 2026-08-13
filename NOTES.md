@@ -46,25 +46,36 @@ deploy-rollback        # revert the last live commit
 - **`.git/index.lock` left behind** by an interrupted git process blocks all
   git operations. Safe to `rm -f` when nothing is actually running.
 
+## File viewer
+
+`projects/viewer.html` opens in a new tab and renders text-ish
+attachments. Reached via `viewer.html?src=<url>&title=<name>&from=<id>`;
+`from` is what makes its back link return to the project.
+
+- **code** — highlight.js from cdnjs, line numbers in a separate cell so
+  copying gives you the source without numbers glued on. Extension maps to
+  language via `LANGS`; `.ino` renders as C++. Unknown extensions still
+  render, just unhighlighted.
+- **`.md`** — rendered with marked.
+- **`.csv` / `.tsv`** — real table, sticky header, row numbers. Parser
+  handles quoted fields, embedded commas and newlines, escaped quotes.
+- Previews cap at 2 MB (`MAX_BYTES`); above that it's a download prompt.
+  Binary content is detected by a NUL byte and refused.
+- If a CDN library fails to load it degrades to plain text rather than
+  breaking.
+
+Routing lives in `project.html`: `IN_VIEWER` goes to the viewer, `NATIVE`
+(PDF, images) opens directly, everything else downloads.
+
+**Depends on R2 CORS** allowing the site origins — see below.
+
 ## Open work — deferred
 
-### Document previews (deferred Aug 2026)
+### STL viewer
 
-Non-PDF attachments currently download instead of opening. Plan when we
-pick this back up:
-
-1. **Prerequisite: R2 CORS.** Allow `https://matthewjgonzalez.me` on the
-   `portfolio-media` bucket. This also unblocks the file-size display on
-   attachment chips, which currently fails silently.
-2. **`viewer.html`** — new tab, fetches the file, renders:
-   - code (`.ino .py .c .h .json`) syntax-highlighted with line numbers
-   - `.md` rendered rather than raw
-   - `.csv` as a real table
-   - a "download raw" button
-3. **STL viewer** via three.js STLLoader — rotatable 3D preview.
-4. **Not feasible:** STEP, F3D, SLDPRT. No browser-side reader worth the
-   weight. Export an STL alongside, or add a public OnShape link as its
-   own chip.
+A three.js STLLoader preview for `.stl`, in the same viewer page. Not
+started. STEP / F3D / SLDPRT aren't feasible in a browser — export an STL
+alongside, or add a public OnShape link as its own chip.
 
 ### Smaller items
 
@@ -126,14 +137,17 @@ against it. Reverted Aug 2026.
 ```json
 "documents": [
   { "src": "https://media.matthewjgonzalez.me/<project>/File.pdf",
-    "title": "Human readable name",
-    "caption": "Optional one-or-two-line description." }
+    "title": "Human readable name" }
 ]
 ```
 
-Only `src` is required. Missing `title` falls back to the filename.
-Missing or blank `caption` renders a compact chip with no description
-line. Omit the whole `documents` key for projects with no attachments.
+Only `src` is required; a missing `title` falls back to the filename. Omit
+the whole `documents` key for projects with no attachments.
+
+Chips are deliberately compact — icon, title, then type and size. Captions
+were tried and removed: they turned the row into a block of cards and
+buried the file list. Images still have captions (those drive the
+lightbox); documents don't.
 
 ## scan-projects.sh
 
