@@ -87,6 +87,24 @@ Only `src` is required. Missing `title` falls back to the filename.
 Missing or blank `caption` renders a compact chip with no description
 line. Omit the whole `documents` key for projects with no attachments.
 
+## scan-projects.sh
+
+`bash scan-projects.sh` diffs `media/` against `projects.json` and prints
+only files that aren't listed yet. Projects with nothing new print nothing.
+It also flags entries in `projects.json` whose file is missing from
+`media/` — usually a rename or deletion that will 404 on the site.
+
+`bash scan-projects.sh --all` prints everything, ignoring what's already
+listed. For rebuilding an array from scratch.
+
+Comparison is percent-decoded, so `Lap%202.mov` matches `Lap 2.mov`.
+If `projects.json` is missing or unparseable it warns and falls back to
+printing everything.
+
+New entries are printed **with trailing commas**, since they're meant to
+be inserted into an existing array. If you paste them as the last entries,
+delete the comma on the final line.
+
 ## Adding an attachment type
 
 1. Add the extension to the right `DOC_EXTS_*` list in `scan-projects.sh`.

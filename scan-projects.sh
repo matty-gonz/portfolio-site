@@ -1,27 +1,34 @@
 #!/bin/bash
 # ─────────────────────────────────────────────────────────────
 # scan-projects.sh
-# Scans your local media/ folder and prints the "images" and
-# "documents" arrays for each project, ready to paste into
-# projects.json.
+# Compares your local media/ folder against projects.json and prints
+# JSON blocks for files that AREN'T LISTED YET — so once you've written
+# captions and ordered a gallery, re-running this only shows you what's
+# new instead of dumping the whole thing again.
 #
 # HOW TO USE:
-#   1. Upload files to R2 first (drag into R2 dashboard)
-#   2. Open Terminal, cd to your Portfolio Site Files folder [cd /Users/mattyg/Documents/Bootstrap\ Studio/Portfolio\ Site\ Files]
-#   3. Run: bash scan-projects.sh
-#   4. Copy the blocks for your project
-#   5. Paste into projects.json, fill in captions / titles
-#   6. deploy-dev, check the staging site, then deploy
+#   1. Upload files to R2 (drag into the R2 dashboard) and drop the same
+#      files into media/<project-id>/ locally
+#   2. cd "$HOME/Documents/Bootstrap Studio/Portfolio Site Files"
+#   3. bash scan-projects.sh
+#   4. Paste the new entries into the right arrays in projects.json
+#   5. Fill in captions, then deploy-dev → check staging → deploy
 #
-# Images and videos go in "images" (the gallery + lightbox).
-# PDFs go in "documents" (the attachment chips below the
-# gallery). A project can have either, both, or neither.
+#   bash scan-projects.sh --all     print everything, ignoring what's
+#                                   already listed (for rebuilding from
+#                                   scratch)
+#
+# Images and videos go in "images" (gallery + lightbox).
+# Everything else goes in "documents" (attachment chips).
+# A project can have either, both, or neither.
 # ─────────────────────────────────────────────────────────────
 
 R2_BASE="https://media.matthewjgonzalez.me"
 MEDIA_DIR="media"
+JSON="projects.json"
 
 IMAGE_EXTS="jpg jpeg png webp gif JPG JPEG PNG WEBP GIF mp4 mov MP4 MOV webm"
+
 # Anything listed here becomes an attachment chip on the project page.
 # The site sorts each file into a kind (doc / code / model / data /
 # archive) by its extension and picks the matching icon and colour, so
@@ -42,6 +49,9 @@ DOC_EXTS="$DOC_EXTS_DOC $DOC_EXTS_CODE $DOC_EXTS_MODEL $DOC_EXTS_DATA $DOC_EXTS_
 # Match both cases without listing every extension twice.
 DOC_EXTS="$DOC_EXTS $(echo "$DOC_EXTS" | tr '[:lower:]' '[:upper:]')"
 
+SHOW_ALL=0
+[ "$1" = "--all" ] && SHOW_ALL=1
+
 if [ ! -d "$MEDIA_DIR" ]; then
   echo ""
   echo "Error: 'media/' folder not found."
@@ -49,71 +59,165 @@ if [ ! -d "$MEDIA_DIR" ]; then
   exit 1
 fi
 
+# ── Collect every src already referenced in projects.json ────────────
+# Percent-decoded so "Lap%202.mov" and "Lap 2.mov" count as the same file.
+# A missing or unreadable projects.json just means nothing is known yet,
+# which degrades to the old print-everything behaviour.
+KNOWN_FILE=$(mktemp)
+trap 'rm -f "$KNOWN_FILE"' EXIT
+
+if [ -f "$JSON" ] && [ "$SHOW_ALL" -eq 0 ]; then
+  python3 - "$JSON" > "$KNOWN_FILE" <<'PY'
+import json, sys
+from urllib.parse import unquote
+try:
+    data = json.load(open(sys.argv[1], encoding='utf-8'))
+except Exception as e:
+    print(f"__JSON_ERROR__{e}")
+    raise SystemExit(0)
+for p in data:
+    for key in ('images', 'documents'):
+        for item in p.get(key) or []:
+            src = item if isinstance(item, str) else (item or {}).get('src', '')
+            if src:
+                print(unquote(src))
+PY
+
+  if grep -q '^__JSON_ERROR__' "$KNOWN_FILE" 2>/dev/null; then
+    echo ""
+    echo "Warning: couldn't read $JSON —"
+    echo "  $(grep '^__JSON_ERROR__' "$KNOWN_FILE" | sed 's/^__JSON_ERROR__//')"
+    echo "  Showing everything instead of only what's new."
+    : > "$KNOWN_FILE"
+  fi
+fi
+
+is_known() {
+  [ -s "$KNOWN_FILE" ] || return 1
+  grep -Fxq "$1" "$KNOWN_FILE"
+}
+
+# Emit a JSON array block, or a short note when there's nothing new.
+# $1 = key name, $2 = count already listed, rest = entries
+print_block() {
+  local key="$1" existing="$2"; shift 2
+  local -a items=("$@")
+
+  if [ ${#items[@]} -eq 0 ]; then
+    if [ "$existing" -gt 0 ]; then
+      echo "  $key — nothing new ($existing already listed)"
+    else
+      echo "  $key — none found"
+    fi
+    return
+  fi
+
+  if [ "$existing" -gt 0 ]; then
+    echo "  $key — ${#items[@]} new (${existing} already listed):"
+  else
+    echo "  \"$key\": ["
+  fi
+
+  for i in "${!items[@]}"; do
+    if [ $i -lt $((${#items[@]} - 1)) ]; then
+      echo "${items[$i]},"
+    else
+      # Trailing comma when appending into an existing array, since these
+      # entries will sit above ones that are already there.
+      if [ "$existing" -gt 0 ]; then echo "${items[$i]},"; else echo "${items[$i]}"; fi
+    fi
+  done
+
+  [ "$existing" -gt 0 ] || echo "  ],"
+}
+
 echo ""
-echo "── Copy each block into projects.json and fill in the blanks ──"
+if [ "$SHOW_ALL" -eq 1 ]; then
+  echo "── ALL files (--all) — ignoring what's already in $JSON ──"
+else
+  echo "── New files only — already-listed entries are hidden ──"
+  echo "   (run with --all to print everything)"
+fi
+
+TOTAL_NEW=0
 
 for project_folder in "$MEDIA_DIR"/*/; do
   [ -d "$project_folder" ] || continue
   id=$(basename "$project_folder")
   [[ "$id" == .* ]] && continue
 
-  images=()
+  images=();    img_known=0
+  documents=(); doc_known=0
+
   for ext in $IMAGE_EXTS; do
     for f in "$project_folder"*."$ext"; do
       [ -f "$f" ] || continue
-      images+=("    { \"src\": \"$R2_BASE/$id/$(basename "$f")\", \"caption\": \"\" }")
+      url="$R2_BASE/$id/$(basename "$f")"
+      if is_known "$url"; then
+        img_known=$((img_known + 1))
+      else
+        images+=("    { \"src\": \"$url\", \"caption\": \"\" }")
+      fi
     done
   done
 
-  documents=()
   for ext in $DOC_EXTS; do
     for f in "$project_folder"*."$ext"; do
       [ -f "$f" ] || continue
       name=$(basename "$f")
-      # Pre-fill the title with the filename minus extension, so you
-      # usually only have to tidy it rather than type it out. Caption is
-      # left blank — fill it in or delete the key entirely.
-      title="${name%.*}"
-      documents+=("    { \"src\": \"$R2_BASE/$id/$name\", \"title\": \"$title\", \"caption\": \"\" }")
+      url="$R2_BASE/$id/$name"
+      if is_known "$url"; then
+        doc_known=$((doc_known + 1))
+      else
+        documents+=("    { \"src\": \"$url\", \"title\": \"${name%.*}\", \"caption\": \"\" }")
+      fi
     done
   done
 
+  new_here=$(( ${#images[@]} + ${#documents[@]} ))
+  TOTAL_NEW=$(( TOTAL_NEW + new_here ))
+
+  # Stay quiet about projects with nothing new — that's the whole point.
+  if [ "$new_here" -eq 0 ] && [ "$SHOW_ALL" -eq 0 ]; then
+    continue
+  fi
+
   echo ""
   echo "  ── $id ──"
-
-  # ---- images ----
-  if [ ${#images[@]} -eq 0 ]; then
-    echo "  \"images\": [],"
-  else
-    echo "  \"images\": ["
-    for i in "${!images[@]}"; do
-      if [ $i -lt $((${#images[@]} - 1)) ]; then
-        echo "${images[$i]},"
-      else
-        echo "${images[$i]}"
-      fi
-    done
-    echo "  ],"
-  fi
-
-  # ---- documents ----
-  # Omitted entirely when there are none. The renderer treats a missing
-  # array the same as an empty one, so don't paste an empty block just
-  # for symmetry.
-  if [ ${#documents[@]} -eq 0 ]; then
-    echo "  (no PDFs found — omit the \"documents\" key for this project)"
-  else
-    echo "  \"documents\": ["
-    for i in "${!documents[@]}"; do
-      if [ $i -lt $((${#documents[@]} - 1)) ]; then
-        echo "${documents[$i]},"
-      else
-        echo "${documents[$i]}"
-      fi
-    done
-    echo "  ],"
-  fi
-
+  print_block "images"    "$img_known" "${images[@]}"
+  print_block "documents" "$doc_known" "${documents[@]}"
 done
 
+# ── Listed in projects.json but missing from media/ ──────────────────
+# Usually means a file was renamed or deleted locally. These will 404 on
+# the site if they're also gone from R2.
+if [ -s "$KNOWN_FILE" ]; then
+  python3 - "$KNOWN_FILE" "$R2_BASE" "$MEDIA_DIR" <<'PY'
+import os, sys
+known_file, base, media = sys.argv[1], sys.argv[2], sys.argv[3]
+missing = []
+for line in open(known_file, encoding='utf-8'):
+    src = line.strip()
+    if not src.startswith(base + '/'):
+        continue
+    rel = src[len(base) + 1:]
+    if not os.path.isfile(os.path.join(media, rel)):
+        missing.append(rel)
+if missing:
+    print("")
+    print(f"  ── listed in projects.json but not in {media}/ ──")
+    for m in missing:
+        print(f"    {m}")
+    print("")
+    print("    Renamed or deleted locally. If they're gone from R2 too,")
+    print("    remove them from projects.json or they'll 404 on the site.")
+PY
+fi
+
+echo ""
+if [ "$TOTAL_NEW" -eq 0 ] && [ "$SHOW_ALL" -eq 0 ]; then
+  echo "  Nothing new — projects.json already lists every file in $MEDIA_DIR/."
+else
+  echo "  $TOTAL_NEW new file(s)."
+fi
 echo ""
