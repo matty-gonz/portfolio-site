@@ -97,6 +97,24 @@ is_known() {
   grep -Fxq "$1" "$KNOWN_FILE"
 }
 
+# Percent-encode the characters that break a URL if left raw.
+# `#` is the dangerous one — it starts the fragment, so
+# ".../Test #2.jpeg" is fetched as ".../Test " and 404s. Spaces work in
+# practice but are encoded for consistency. `%` must be substituted
+# first or it would double-encode the ones added after it.
+urlenc() {
+  local s="$1"
+  s="${s//%/%25}"
+  s="${s//#/%23}"
+  s="${s//\?/%3F}"
+  s="${s// /%20}"
+  s="${s//\[/%5B}"
+  s="${s//\]/%5D}"
+  s="${s//(/%28}"
+  s="${s//)/%29}"
+  printf '%s' "$s"
+}
+
 # Emit a JSON array block, or a short note when there's nothing new.
 # $1 = key name, $2 = count already listed, rest = entries
 print_block() {
@@ -152,8 +170,11 @@ for project_folder in "$MEDIA_DIR"/*/; do
   for ext in $IMAGE_EXTS; do
     for f in "$project_folder"*."$ext"; do
       [ -f "$f" ] || continue
-      url="$R2_BASE/$id/$(basename "$f")"
-      if is_known "$url"; then
+      # Compare on the raw form (the known-list is percent-decoded) but
+      # emit the encoded form.
+      raw="$R2_BASE/$id/$(basename "$f")"
+      url="$R2_BASE/$(urlenc "$id")/$(urlenc "$(basename "$f")")"
+      if is_known "$raw"; then
         img_known=$((img_known + 1))
       else
         images+=("    { \"src\": \"$url\", \"caption\": \"\" }")
@@ -165,8 +186,9 @@ for project_folder in "$MEDIA_DIR"/*/; do
     for f in "$project_folder"*."$ext"; do
       [ -f "$f" ] || continue
       name=$(basename "$f")
-      url="$R2_BASE/$id/$name"
-      if is_known "$url"; then
+      raw="$R2_BASE/$id/$name"
+      url="$R2_BASE/$(urlenc "$id")/$(urlenc "$name")"
+      if is_known "$raw"; then
         doc_known=$((doc_known + 1))
       else
         documents+=("    { \"src\": \"$url\", \"title\": \"${name%.*}\", \"caption\": \"\" }")

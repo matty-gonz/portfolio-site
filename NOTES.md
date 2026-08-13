@@ -39,6 +39,10 @@ deploy-rollback        # revert the last live commit
   TextEdit refuse to save them ("you don't have permission"). Fix:
   `find . -type f -links +1 -not -path "./.git/*"` then replace each with a
   copy of itself. Better: don't attach files, the folder is connected.
+- **`#` in a filename silently breaks the URL.** `#` starts the fragment,
+  so `.../Test #2.jpeg` is fetched as `.../Test ` and 404s — the image just
+  shows as broken with no error anywhere. `scan-projects.sh` now
+  percent-encodes filenames, but watch for it if you hand-write a src.
 - **`.git/index.lock` left behind** by an interrupted git process blocks all
   git operations. Safe to `rm -f` when nothing is actually running.
 

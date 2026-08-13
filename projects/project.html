@@ -115,11 +115,15 @@
     /* ── DOCUMENT ATTACHMENTS ─────────────────────────────── */
     /* Row of file chips below the gallery toggle. Renders nothing
        at all when a project has no `documents` array. */
+    /* Grid rather than flex-wrap so chips share the full content width
+       evenly instead of stopping partway across and leaving a ragged
+       right edge. Columns collapse 3 -> 2 -> 1 as the page narrows. */
     .doc-row {
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 270px), 1fr));
       gap: 0.6rem;
       margin-top: 1.25rem;
+      align-items: stretch;
     }
     .doc-row:empty { display: none; }
 
@@ -145,8 +149,8 @@
 
     .doc-glyph {
       flex: 0 0 auto;
-      width: 19px;
-      height: 24px;
+      width: 18px;
+      height: 21px;
       /* Muted at rest so a row of chips stays calm; full colour on hover. */
       color: var(--kind, var(--text-muted));
       opacity: 0.62;
@@ -193,11 +197,14 @@
       overflow: hidden;
     }
 
+    /* With a caption the icon aligns to the title line, the way mail
+       clients do it — centring against a three-line block would leave it
+       floating next to the description instead. The -2px offset lines the
+       glyph's optical centre up with the title's cap height. */
     .doc-chip.has-caption {
       align-items: flex-start;
-      max-width: 340px;
     }
-    .doc-chip.has-caption .doc-glyph { margin-top: 1px; }
+    .doc-chip.has-caption .doc-glyph { margin-top: -2px; }
     .doc-chip.has-caption .doc-sub   { margin-top: 5px; }
 
     /* Without a caption the title can't wrap, so ellipsis it. With one,
@@ -462,6 +469,30 @@
   <script>
     const GALLERY_LIMIT = 4;
 
+    // ── IMAGE DELIVERY ─────────────────────────────────────
+    // Cloudflare Transformations resizes and re-encodes on the fly, so a
+    // 60px filmstrip thumbnail doesn't cost a 3 MB download. `format=auto`
+    // also serves WebP/AVIF to browsers that support them.
+    //
+    // Free tier covers 5,000 unique transformations per month; each
+    // image/width pair counts once and is then cached at the edge, so this
+    // library uses roughly 90 of them total.
+    //
+    // If Transformations isn't enabled on the zone these URLs 404, so every
+    // <img> falls back to the original once before giving up. Set this to
+    // false to bypass the CDN entirely.
+    const IMG_CDN = true;
+
+    function imgURL(src, width) {
+      if (!IMG_CDN || isVideo(src)) return src;
+      return `/cdn-cgi/image/width=${width},quality=82,format=auto/${src}`;
+    }
+
+    // Swap to the untransformed original on first failure, hide on second.
+    const IMG_FALLBACK =
+      "if(!this.dataset.fb){this.dataset.fb=1;this.src=this.dataset.raw;}" +
+      "else{this.style.visibility='hidden';}";
+
     // ── DOCUMENT ATTACHMENT HELPERS ────────────────────────
     // Attachments are grouped into kinds. Each kind gets its own glyph
     // and accent colour so a row of chips is scannable at a glance —
@@ -471,43 +502,44 @@
     // kind fits. Unknown extensions fall back to `doc`, so nothing ever
     // breaks — it just gets the generic page icon.
     const FILE_KINDS = {
+    // All glyphs live in a 22x26 box and are centred on (11, 13). That
+    // shared centre is what makes them line up with each other and with
+    // the chip title — previously each shape had a different ink height
+    // (22 vs 15 units) so none of them agreed on a baseline.
       doc: {
         ext: ['pdf', 'doc', 'docx', 'txt', 'md', 'rtf', 'pages'],
         color: '#16c1ff', dim: 'rgba(22,193,255,0.38)',
-        // 17w x 22h. The original was 15x26.6, noticeably taller than the
-        // cube and table glyphs sitting next to it; this squares it up so
-        // the row reads as one set.
-        glyph: `<path d="M3.5 4h11.5l5.5 5.5V26h-17z"/>
-                <path d="M15 4v5.5h5.5"/>
-                <path d="M7.5 15.5h9M7.5 20h6" stroke-width="1.3" stroke-linecap="round"/>`
+        glyph: `<path d="M3 2.5h10l6 6v15H3z"/>
+                <path d="M13 2.5v6h6"/>
+                <path d="M6.5 13.5h9M6.5 17.5h6" stroke-width="1.3" stroke-linecap="round"/>`
       },
       code: {
         ext: ['ino', 'py', 'c', 'h', 'cpp', 'hpp', 'js', 'ts', 'java', 'cs',
               'm', 'rb', 'go', 'rs', 'sh', 'ipynb', 'json', 'xml', 'yml', 'yaml'],
         color: '#6ee7a8', dim: 'rgba(110,231,168,0.38)',
-        glyph: `<path d="M9 10 4 15l5 5" stroke-linecap="round"/>
-                <path d="M15 10l5 5-5 5" stroke-linecap="round"/>
-                <path d="M13.2 7.5l-2.4 15" stroke-linecap="round"/>`
+        glyph: `<path d="M8 6.5 2.5 13 8 19.5" stroke-linecap="round"/>
+                <path d="M14 6.5 19.5 13 14 19.5" stroke-linecap="round"/>
+                <path d="M12.6 4.5l-3.2 17" stroke-linecap="round"/>`
       },
       model: {
         ext: ['step', 'stp', 'stl', 'f3d', 'sldprt', 'sldasm', 'iges', 'igs',
               'obj', '3mf', 'dxf', 'dwg', 'ipt', 'iam', 'x_t', 'gltf'],
         color: '#f2b366', dim: 'rgba(242,179,102,0.38)',
-        glyph: `<path d="M12 5.5 20.5 10.25v9.5L12 24.5 3.5 19.75v-9.5z"/>
-                <path d="M12 5.5V15M12 15l8.5-4.75M12 15l-8.5-4.75"/>`
+        glyph: `<path d="M11 3.5 19.5 8.25v9.5L11 22.5 2.5 17.75v-9.5z"/>
+                <path d="M11 3.5V13M11 13l8.5-4.75M11 13l-8.5-4.75"/>`
       },
       data: {
         ext: ['csv', 'tsv', 'xlsx', 'xls', 'numbers', 'db', 'sqlite', 'mat'],
         color: '#b39dfa', dim: 'rgba(179,157,250,0.38)',
-        glyph: `<rect x="3.5" y="6.5" width="17" height="17" rx="1.5"/>
-                <path d="M3.5 11.5h17M9.2 11.5v12M14.8 11.5v12"/>`
+        glyph: `<rect x="2.5" y="4.5" width="17" height="17" rx="1.5"/>
+                <path d="M2.5 9.5h17M8.2 9.5v12M13.8 9.5v12"/>`
       },
       archive: {
         ext: ['zip', 'tar', 'gz', 'rar', '7z'],
         color: '#93a3b8', dim: 'rgba(147,163,184,0.38)',
-        glyph: `<path d="M3.5 10.5h17v13h-17z"/>
-                <path d="M3.5 10.5 6 6h12l2.5 4.5"/>
-                <path d="M10.4 10.5v3.6h3.2v-3.6"/>`
+        glyph: `<path d="M2.5 8.5h17v13h-17z"/>
+                <path d="M2.5 8.5 5 4.5h12l2.5 4"/>
+                <path d="M9.4 8.5v3.6h3.2V8.5"/>`
       }
     };
 
@@ -521,7 +553,7 @@
 
     function glyphFor(src) {
       const k = FILE_KINDS[kindOf(src)];
-      return `<svg class="doc-glyph" viewBox="0 0 24 30" fill="none"
+      return `<svg class="doc-glyph" viewBox="0 0 22 26" fill="none"
           stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"
           aria-hidden="true">${k.glyph}</svg>`;
     }
@@ -600,7 +632,7 @@
         if (isVideo(src) || preloadCache.has(src)) continue;
         preloadCache.add(src);
         const img = new Image();
-        img.src = src;
+        img.src = imgURL(src, 1800);
       }
     }
 
@@ -614,7 +646,12 @@
         if (isVideo(src)) {
           return `<div class="lb-thumb-video" data-index="${i}" title="Video">▶</div>`;
         } else {
-          return `<img class="lb-thumb" src="${src}" data-index="${i}" alt="">`;
+          // 160px wide, lazily loaded. Previously this pulled the full
+          // original for every image in the project just to draw a strip of
+          // 60px squares — 30 photos meant tens of megabytes on open.
+          return `<img class="lb-thumb" src="${imgURL(src, 160)}"
+                    data-raw="${src}" data-index="${i}" alt=""
+                    loading="lazy" decoding="async" onerror="${IMG_FALLBACK}">`;
         }
       }).join('');
 
@@ -661,7 +698,11 @@
         lbImg.classList.remove('lb-img');
         void lbImg.offsetWidth;
         lbImg.classList.add('lb-img');
-        lbImg.src = src;
+        // 1800px is plenty for a full-screen lightbox even on a retina
+        // display, and a fraction of the original file size.
+        lbImg.dataset.raw = src;
+        delete lbImg.dataset.fb;
+        lbImg.src = imgURL(src, 1800);
       }
 
       // counter
@@ -795,11 +836,14 @@
                      <div class="gallery-play-icon"></div>
                    </div>`
                 : `<img
-                     src="${item.src}"
+                     src="${imgURL(item.src, 700)}"
+                     data-raw="${item.src}"
                      class="gallery-img"
                      alt="${p.title} ${i + 1}"
                      data-index="${i}"
-                     onerror="this.parentElement.style.display='none'"
+                     loading="lazy"
+                     decoding="async"
+                     onerror="if(!this.dataset.fb){this.dataset.fb=1;this.src=this.dataset.raw;}else{this.parentElement.style.display='none';}"
                    >`;
               return `<div class="col-6 col-sm-3 ${i >= GALLERY_LIMIT ? 'gallery-extra' : ''}">${el}</div>`;
             }).join('');

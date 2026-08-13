@@ -1,180 +1,308 @@
 [
-
-
   {
     "id": "static-fire-rocket-project",
     "title": "Static Fire Testing Platform",
     "subtitle": "Personal",
     "blurb": "SFRP description / blurb - 'Researched, designed, and constructed a static-fire testing platform for motors up to 20kg of thrust.'",
-
-
     "description": [
       "Intro",
       "Middle",
       "Conclusion"
     ],
-
-
-    "thumbnail": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Test #2.jpeg",
-
-
+    "thumbnail": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Test%20%232.jpeg",
     "images": [
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Completed Build.jpeg", "caption": "Completed plexiglass platform / scale, with electronics box on the left and ignition / motors on the right. The final build omitted the wooden platform connecting the box and scale for simplicity, but otherwise the scale was constructed as designed in the schematic." },
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Final Setup.jpeg", "caption": "The platform set up in my driveway, ready for testing." },
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Test #2.jpeg", "caption": "" },
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Testing C6-5 (Test #1).mov", "caption": "The first fire on one of the C6-5 motors, performing perfectly and as-expected." },
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/D12-3 (Test #2) Ready to Fire.jpeg", "caption": "The setup before firing the second test." },
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Testing D12-3 (Test #2).mov", "caption": "The second fire on one of the D12-3 motors, performing well with a small scare at the end (thankfully, nothing was damaged)." },
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Wiring Diagram for Electronics.png", "caption": "Preliminary wiring diagram for Arduino, HX711 amplifier, SD reader, and load cell, that I made after researching each component's documentation." },   
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/First Soldering Attempt.jpeg", "caption": "Testing my new soldering iron and 22AWG solid core wire on a spare aviation plug." },
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/First Completed Aviation Plug.jpeg", "caption": "A completed aviation plug, with the wires on either end lined up to the same terminals. This plug was just used to teach myself how to solder and would not be used in the final build." },
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Setting Up HX711.jpeg", "caption": "The HX711 reads and amplifies the signal from the load cell. Additionally, the SparkFun model in particular has a rate of roughly 80Hz, increasing the amount of readings per second which assists with the quick impulse of commercial rocket motors." },
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Soldered Male Pins on HX711.jpeg", "caption": "" },
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Testing HX711 using Jumper Cables.jpeg", "caption": "" },    
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Soldered Female Pins on Arduino Shield - Bottom.jpeg", "caption": "These pins were originally intended to have wires attached here, on the bottom of the shield, thus I mapped each pin to a terminal on the corresponding electronic to be attached to it. In the end, the Arduino sat too close to the underside of the shield and I had to solder the wires on the top of each component. Thus, the pins served more as mounting spaces rather than electronic connections." },
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Soldered Female Pins on Arduino Shield - Top.jpeg", "caption": "These pins are where the male pins soldered to the SD reader and HX711 mount." },
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Completed Electronics (1).jpeg", "caption": "The completed electronics, with the Arduino, HX711, and SD reader all attached to the shield. The wires are soldered directly to the electronics, and are attached to the screw terminals of the shield." },
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Completed Electronics (2).jpeg", "caption": "The data cables for the SD reader and HX711 flow into ports 10-13." },
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Soldering Load Cells to Aviation Plug (1).jpeg", "caption": "I began the construction by teaching myself soldering the first aviation plug, before soldering the real connections on the shield and components. By these images, I became much better at soldering the tricky terminals in the aviation plugs." },
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Soldering Load Cells to Aviation Plug (2).jpeg", "caption": "" },
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Electronics in Electronics Box.jpeg", "caption": "The completed electronics sitting in a modified flashcard box, insulated with duct taped-walls and a bubble wrap 'floor.' Using paper, the board sits snug in the box while still being removable. The intention behind the box was to protect the electronics as the motor fires, and for easy transport without potentially damaging the board or the connections." },
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Electronics Box (1).jpeg", "caption": "The HX711 aviation plug, data, and power connectors all visible and accessible. The holes were created using a 1/2\" drill bit and pliers, and then wrapped with duct tape to round-out the sharper edges." },
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Electronics Box (2).jpeg", "caption": "The data and power cable ports on the Arduino. The power bank sits taped below the box, and contains 8 AA batteries outputted to a barrel plug, connecting directly to the Arduino." },
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Electronics Box (3).jpeg", "caption": "The HX711 port, connecting the load cell to the electronics." },
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Ignition System Wiring Diagram.jpeg", "caption": "Wiring diagram I made to help me while I assembled the ignition system. A red wire from the battery (connected to the fuse) goes into the box, and goes into the key's terminals. Then, it jumps to the button, and then goes out the box towards the motor. Both the key and the button function identically- the circuit is not completed until the key is turned and the button is pressed, making accidental ignition nearly impossible." },
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Completed Ignition System.jpeg", "caption": "The completed ignition system as described in the diagram. The wires are connected using alligator clips I pressed the ends of the 16AWG wire to. The 5A fuse is also visible, which ensures that all damage coming from a short goes to the cheap and replaceable fuse rather than any of the more expensive components. Multimeter testing helped me troubleshoot the circuit." },
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Motors Set Up with Ignitors.jpeg", "caption": "The C6-5 and D12-3 motors with the starters installed and cardboard taped on to help secure motors to the mount. On the day of testing, only one motor failed to start inexplicably." },
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Spacer within Motor Mount.jpeg", "caption": "The motors I purchased ended up being much smaller than the motor mount in both height and diameter. Because I pivoted away from the screw-fastening design, I used cardboard to raise the floor of the scale within the mount." },
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Mock Setup.jpeg", "caption": "A practice setup with everything connected. The ignition was not armed for safety, since otherwise, the cables were completely connected to the starters." },
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/C6-5 Tests #1 and #2 - Data Analysis.png", "caption": "" },
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/D12-3 Tests #1 and #2 - Data Analysis.png", "caption": "Tests 1 and 2 for the D12-3 motors. The first test's results are skewed by ~3N, most likely due to a recalibration error or an accidental interaction with the scale. This error was fixed by Test 2 which is much more accurate to the real, certified data." },
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Comparing to NAR Certified Results.png", "caption": "Both motor class tests compared to NAR certified data. Noticeably, the C6-5 curves are all very similar, except for a discrepancy with burn time. The D12-3 curves are noticeably more distinct, with the first test being skewed by ~3N. The second test was much closer to the accurate numbers. These results show that the platform is both consistent, accurate, and consistently accurate." }
-
-
-
-  ],
-
-
-  "documents": [
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Static Fire Rocket Platform - Schematic.pdf", "title": "Static Fire Rocket Platform - Schematic", "caption": "" },
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Static Fire Rocket Project - Raw Data.zip", "title": "Static Fire Rocket Project - Raw Data", "caption": "The raw .csv and .xlsx files created by the electronics during testing." },
-    { "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Static Fire Rocket Project - Data Analysis.xlsx", "title": "Static Fire Rocket Project - Data Analysis", "caption": "Excel file containing all the raw data converted to readable data, as well as the complete impulse graphs and analysis for each motor class." }
-
-  ],
-
-
+      {
+        "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Completed%20Build.jpeg",
+        "caption": "Completed plexiglass platform / scale, with electronics box on the left and ignition / motors on the right. The final build omitted the wooden platform connecting the box and scale for simplicity, but otherwise the scale was constructed as designed in the schematic."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Final%20Setup.jpeg",
+        "caption": "The platform set up in my driveway, ready for testing."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Test%20%232.jpeg",
+        "caption": ""
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Testing%20C6-5%20%28Test%20%231%29.mov",
+        "caption": "The first fire on one of the C6-5 motors, performing perfectly and as-expected."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/D12-3%20%28Test%20%232%29%20Ready%20to%20Fire.jpeg",
+        "caption": "The setup before firing the second test."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Testing%20D12-3%20%28Test%20%232%29.mov",
+        "caption": "The second fire on one of the D12-3 motors, performing well with a small scare at the end (thankfully, nothing was damaged)."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Wiring%20Diagram%20for%20Electronics.png",
+        "caption": "Preliminary wiring diagram for Arduino, HX711 amplifier, SD reader, and load cell, that I made after researching each component's documentation."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/First%20Soldering%20Attempt.jpeg",
+        "caption": "Testing my new soldering iron and 22AWG solid core wire on a spare aviation plug."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/First%20Completed%20Aviation%20Plug.jpeg",
+        "caption": "A completed aviation plug, with the wires on either end lined up to the same terminals. This plug was just used to teach myself how to solder and would not be used in the final build."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Setting%20Up%20HX711.jpeg",
+        "caption": "The HX711 reads and amplifies the signal from the load cell. Additionally, the SparkFun model in particular has a rate of roughly 80Hz, increasing the amount of readings per second which assists with the quick impulse of commercial rocket motors."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Soldered%20Male%20Pins%20on%20HX711.jpeg",
+        "caption": ""
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Testing%20HX711%20using%20Jumper%20Cables.jpeg",
+        "caption": ""
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Soldered%20Female%20Pins%20on%20Arduino%20Shield%20-%20Bottom.jpeg",
+        "caption": "These pins were originally intended to have wires attached here, on the bottom of the shield, thus I mapped each pin to a terminal on the corresponding electronic to be attached to it. In the end, the Arduino sat too close to the underside of the shield and I had to solder the wires on the top of each component. Thus, the pins served more as mounting spaces rather than electronic connections."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Soldered%20Female%20Pins%20on%20Arduino%20Shield%20-%20Top.jpeg",
+        "caption": "These pins are where the male pins soldered to the SD reader and HX711 mount."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Completed%20Electronics%20%281%29.jpeg",
+        "caption": "The completed electronics, with the Arduino, HX711, and SD reader all attached to the shield. The wires are soldered directly to the electronics, and are attached to the screw terminals of the shield."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Completed%20Electronics%20%282%29.jpeg",
+        "caption": "The data cables for the SD reader and HX711 flow into ports 10-13."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Soldering%20Load%20Cells%20to%20Aviation%20Plug%20%281%29.jpeg",
+        "caption": "I began the construction by teaching myself soldering the first aviation plug, before soldering the real connections on the shield and components. By these images, I became much better at soldering the tricky terminals in the aviation plugs."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Soldering%20Load%20Cells%20to%20Aviation%20Plug%20%282%29.jpeg",
+        "caption": ""
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Electronics%20in%20Electronics%20Box.jpeg",
+        "caption": "The completed electronics sitting in a modified flashcard box, insulated with duct taped-walls and a bubble wrap 'floor.' Using paper, the board sits snug in the box while still being removable. The intention behind the box was to protect the electronics as the motor fires, and for easy transport without potentially damaging the board or the connections."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Electronics%20Box%20%281%29.jpeg",
+        "caption": "The HX711 aviation plug, data, and power connectors all visible and accessible. The holes were created using a 1/2\" drill bit and pliers, and then wrapped with duct tape to round-out the sharper edges."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Electronics%20Box%20%282%29.jpeg",
+        "caption": "The data and power cable ports on the Arduino. The power bank sits taped below the box, and contains 8 AA batteries outputted to a barrel plug, connecting directly to the Arduino."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Electronics%20Box%20%283%29.jpeg",
+        "caption": "The HX711 port, connecting the load cell to the electronics."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Ignition%20System%20Wiring%20Diagram.jpeg",
+        "caption": "Wiring diagram I made to help me while I assembled the ignition system. A red wire from the battery (connected to the fuse) goes into the box, and goes into the key's terminals. Then, it jumps to the button, and then goes out the box towards the motor. Both the key and the button function identically- the circuit is not completed until the key is turned and the button is pressed, making accidental ignition nearly impossible."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Completed%20Ignition%20System.jpeg",
+        "caption": "The completed ignition system as described in the diagram. The wires are connected using alligator clips I pressed the ends of the 16AWG wire to. The 5A fuse is also visible, which ensures that all damage coming from a short goes to the cheap and replaceable fuse rather than any of the more expensive components. Multimeter testing helped me troubleshoot the circuit."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Motors%20Set%20Up%20with%20Ignitors.jpeg",
+        "caption": "The C6-5 and D12-3 motors with the starters installed and cardboard taped on to help secure motors to the mount. On the day of testing, only one motor failed to start inexplicably."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Spacer%20within%20Motor%20Mount.jpeg",
+        "caption": "The motors I purchased ended up being much smaller than the motor mount in both height and diameter. Because I pivoted away from the screw-fastening design, I used cardboard to raise the floor of the scale within the mount."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Mock%20Setup.jpeg",
+        "caption": "A practice setup with everything connected. The ignition was not armed for safety, since otherwise, the cables were completely connected to the starters."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/C6-5%20Tests%20%231%20and%20%232%20-%20Data%20Analysis.png",
+        "caption": ""
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/D12-3%20Tests%20%231%20and%20%232%20-%20Data%20Analysis.png",
+        "caption": "Tests 1 and 2 for the D12-3 motors. The first test's results are skewed by ~3N, most likely due to a recalibration error or an accidental interaction with the scale. This error was fixed by Test 2 which is much more accurate to the real, certified data."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Comparing%20to%20NAR%20Certified%20Results.png",
+        "caption": "Both motor class tests compared to NAR certified data. Noticeably, the C6-5 curves are all very similar, except for a discrepancy with burn time. The D12-3 curves are noticeably more distinct, with the first test being skewed by ~3N. The second test was much closer to the accurate numbers. These results show that the platform is both consistent, accurate, and consistently accurate."
+      }
+    ],
+    "documents": [
+      {
+        "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Static%20Fire%20Rocket%20Platform%20-%20Schematic.pdf",
+        "title": "Static Fire Rocket Platform - Schematic",
+        "caption": ""
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Static%20Fire%20Rocket%20Project%20-%20Raw%20Data.zip",
+        "title": "Static Fire Rocket Project - Raw Data",
+        "caption": "The raw .csv and .xlsx files created by the electronics during testing."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Static%20Fire%20Rocket%20Project%20-%20Data%20Analysis.xlsx",
+        "title": "Static Fire Rocket Project - Data Analysis",
+        "caption": "Excel file containing all the raw data converted to readable data, as well as the complete impulse graphs and analysis for each motor class."
+      }
+    ],
     "date_start": "2026-05",
-    "date_end":   "2026-08",
-
+    "date_end": "2026-08",
     "skills": [
-  "",
-  ""
-]
-
-
+      "",
+      ""
+    ]
   },
-
   {
     "id": "rc-derby",
     "title": "Remote Control Car",
     "subtitle": "ASME * RC Derby 2026",
     "blurb": "Designed and iterated a remote-controlled car using a servo-driven steering system through multiple linkage configurations; contributed to chassis layout and component integration after designing in OnShape. Placed 3rd of 6 teams as the only freshman competitors in the UCF ASME 2026 RC Derby.",
-
-
     "description": [
       "This project was done for the American Society of Mechanical Engineers (ASME) student chapter at the University of Central Florida, specifically for their RC Derby, a competition tasking teams with building a remote-controlled car under size, battery, and component restrictions, then racing it around a small track for time.",
       "The initial design consisted almost entirely of 3D-printed parts for ease of construction and weight. The components would rest on a flat plate, with the electronics (battery, ESC, microcontroller / receiver) in the center, motors in the rear, and a servo-steering system in the front. The steering system was originally a complicated mechanism involving several shafts and gears, along with other concepts that we experimented with. We eventually landed on the steering 'rod' design, where a servo pushes a rigid arm left or right to then rotate a set of wheels in that direction. The motors and electrical components remained unchanged, and did not need much innovation.",
       "Overall, the car was serviceable for how quickly it came together. Since most of the legwork was refining the steering, and considering we all had little experience with engineering as a whole during this project, I'm glad it worked well enough on race day. Still, the car was not without its issues— the joints that the wheels rested on had some difficulty turning smoothly, and our turning radius suffered as a result. The front wheels often slid instead of rolling, which hurt our speed. This was made more difficult due to the fact that the remote control we were given had faulty controls. Because we received the parts on race day, cable management also proved to be something that interfered with performance. Nevertheless, we completed the loop several times and finished 3rd place out of 6 competing teams- the only freshmen participating. While we could have done better on race day, I am more satisfied with my growth as a result of this project. I became more comfortable with OnShape and the engineering design process, specifically in attempting to model as much as I could on my own. While it was difficult to model the wheel mounts and pins to be the perfect size, the trial and error was key to my learning. My teammates helped me better understand soldering and the order in which the electronics operated. Most importantly, this project pushed me to be a more effective leader, as I would often close group meetings with reminders, deadlines, and task assignments for each member."
     ],
-
-
-    "thumbnail": "https://media.matthewjgonzalez.me/rc-derby/Completed Car.JPG",
-
-
+    "thumbnail": "https://media.matthewjgonzalez.me/rc-derby/Completed%20Car.JPG",
     "images": [
-    { "src": "https://media.matthewjgonzalez.me/rc-derby/Completed Car.JPG", "caption": "The completed car with all its systems in place." },
-    { "src": "https://media.matthewjgonzalez.me/rc-derby/Lap 2.mov", "caption": "Lap 2 on race day." },
-    { "src": "https://media.matthewjgonzalez.me/rc-derby/Team Picture.jpeg", "caption": "From left to right, Matthew Julian González, Philip Pereira, Rogelio Padron Hernandez, Raul Crisppi, Gus." },
-    { "src": "https://media.matthewjgonzalez.me/rc-derby/Initial Sketch.jpeg", "caption": "First sketch of the car after meeting a handful of times." },
-    { "src": "https://media.matthewjgonzalez.me/rc-derby/Motor-ESC Guide.jpeg", "caption": "Advice from ASME's project lead Will on how to properly solder the motor to the ESC." },
-    { "src": "https://media.matthewjgonzalez.me/rc-derby/Servo Guide.jpeg", "caption": "Advice from ASME's project lead Will on how the servo works." },
-    { "src": "https://media.matthewjgonzalez.me/rc-derby/Servo Mount Mockup.JPG", "caption": "Mockup on custom 3D-printed pieces to mount the servo to the car's base." },
-    { "src": "https://media.matthewjgonzalez.me/rc-derby/Steering Mockup.jpeg", "caption": "A more finalized version of the car's steering system. The final steering system closely resembles this mockup." },
-    { "src": "https://media.matthewjgonzalez.me/rc-derby/Final Working Steering System.mov", "caption": "Video of the steering system hooked up to the remote control. Notice how the car has no issue turning left but struggles to turn right." },
-    { "src": "https://media.matthewjgonzalez.me/rc-derby/Various 3D-Printed Parts.jpeg", "caption": "Various pins and collars for different uses across the car." }
-  ],
-
-
+      {
+        "src": "https://media.matthewjgonzalez.me/rc-derby/Completed%20Car.JPG",
+        "caption": "The completed car with all its systems in place."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/rc-derby/Lap%202.mov",
+        "caption": "Lap 2 on race day."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/rc-derby/Team%20Picture.jpeg",
+        "caption": "From left to right, Matthew Julian González, Philip Pereira, Rogelio Padron Hernandez, Raul Crisppi, Gus."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/rc-derby/Initial%20Sketch.jpeg",
+        "caption": "First sketch of the car after meeting a handful of times."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/rc-derby/Motor-ESC%20Guide.jpeg",
+        "caption": "Advice from ASME's project lead Will on how to properly solder the motor to the ESC."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/rc-derby/Servo%20Guide.jpeg",
+        "caption": "Advice from ASME's project lead Will on how the servo works."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/rc-derby/Servo%20Mount%20Mockup.JPG",
+        "caption": "Mockup on custom 3D-printed pieces to mount the servo to the car's base."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/rc-derby/Steering%20Mockup.jpeg",
+        "caption": "A more finalized version of the car's steering system. The final steering system closely resembles this mockup."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/rc-derby/Final%20Working%20Steering%20System.mov",
+        "caption": "Video of the steering system hooked up to the remote control. Notice how the car has no issue turning left but struggles to turn right."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/rc-derby/Various%203D-Printed%20Parts.jpeg",
+        "caption": "Various pins and collars for different uses across the car."
+      }
+    ],
     "date_start": "2026-01",
-    "date_end":   "2026-04",
-
+    "date_end": "2026-04",
     "skills": [
-  "CAD",
-  "3D Printing",
-  "Sketching",
-  "Prototyping",
-  "Chassis Design",
-  "Servo Mechanisms",
-  "Vehicle Steering",
-  "Electrical Systems",
-  "Team Leadership",
-  "Project Management"
-]
-
-
+      "CAD",
+      "3D Printing",
+      "Sketching",
+      "Prototyping",
+      "Chassis Design",
+      "Servo Mechanisms",
+      "Vehicle Steering",
+      "Electrical Systems",
+      "Team Leadership",
+      "Project Management"
+    ]
   },
-
   {
     "id": "gnor-submarine",
     "title": "Autonomous Submarine",
     "subtitle": "Engineering Concepts and Methods * Great Naval Orange Race 2026",
     "blurb": "Designed and iterated propulsion and guidance systems for a fully autonomous submarine as part of UCF's Great Naval Orange Race 2026; led multiple redesigns of the rudder, propeller shroud, and dual-propeller steering mechanism in OnShape. Contributed to hull construction and electronics integration, including waterproofing and wiring of onboard components.",
-
-
     "description": [
       "This project was done for the Lab portion of EGS 1007C 'Engineering Concepts and Methods,' specifically the 2026 Great Navel Orange Race. The assignment tasks students in groups of 4-5 with constructing a fully autonomous aquatic vehicle capable of transporting a navel orange across UCF's Reflection Pond in a semicircle, with a long list of restrictions and regulations regarding the final build.",
       "Originally, we had bounced around ideas of an airboat or a speedboat, eventually settling on a submarine after feeling that we were capable of the challenge. My original sketch detailed our preliminary ideas- we would completely waterproof the hull using a sealant, placing the orange within the detachable nose cone of the submarine and harboring the electronics within the center of the vessel. A steering and propulsion system sat in the rear of the sub, although it was vague in detail since we had yet to define it completely. It included a ballast system involving the use of a servo or motor to pull or push the plunger of a large syringe to increase or decrease the mass of the sub for floating and sinking. The hull itself was intended to be completely modeled in CAD and 3D-printed with a low infill to counteract the negatively-buoyant PLA. As time passed and the physical work began, our team realized we had designed a vehicle that was too complex for the budget and part restrictions, not to mention the time it would take for us to troubleshoot these systems on limited hardware. Later sketches reflected this as we downsized the operation greatly- we shrank the physical size by a third, removed the ballast system entirely, and designed a less sophisticated system of electrical installation and orange stowage. Because I was tasked with propulsion and guidance, most of my sketches involved several revamps of the rudder, propeller, propeller shroud, and the steering mechanism. After countless redesigns, the final build was massively simplified to reflect the aforementioned limitations. Instead of a detachable nose cone, the cylindrical hull and nose were attached, with the rear of the submarine (now lacking any shroud or rudder) being a small disk with a long 'platform' in its center that housed the electronics, which sat in a waterproofed Tupperware container. Steering was to be accomplished with a new dual-propeller system, in which more power would be given to the port or starboard propeller to yaw the vessel in either direction. Because of this, the submarine had no way of correcting its roll or pitch, and instead had to rely on consistent buoyancy. Without a ballast, we determined the best method of sinking the submarine was to waterproof all electronics before filling the inside of the hull entirely with water.",
       "The submarine failed on race day due to several concurrent issues. For one, we had consistent troubles fitting the Tupperware into the cylindrical hull, since the edges of the container were too wide for the circular opening. Consequently, the back of the sub sat awkwardly attached, leaving not only a gap but also pushing the rear of the sub up and at an angle. The propeller shafts were also experiencing difficulty staying attached to the motors for some unknown reason, however it most likely had to do with the prior mentioned Tupperware issue. Since the motors themselves were fairly cheap and the shafts were not properly fitted, there was little to no propulsion once the submarine was let go.",
       "I believe our greatest failure was communication in the first month of the project. When we did meet, we were incredibly focused and prepared to work, however we fell directionless not long after since we struggled to follow-up with each other. It was the tenacity and dedication in the last month and a half of the project that taught me the most in this project. We began to meet much more often, and we all took our individual assignments seriously. The project became our central focus and we were constantly designing, prototyping, failing, and redesigning. Thus, the project management we developed will stick with me forever. I became a more confident leader and I was more comfortable with assigning everyone to a task, as well as keeping up with progress after meetings subsided. As for technical skills, I became more confident and capable in my sketches as the project continued. It bled into my concurrent project, the Remote Control Car, where I began to make more detailed and useful sketches rather than rough scribbles. I had never used OnShape before this project, and taught myself out of necessity. I became more competent as the sketches became more defined and I became more confident in my ability to CAD what I had drawn on paper. In the last two weeks, when we began putting together the final build, I gained hands-on experience with the hardware and construction. I was tasked with completely rebuilding the Tupperware in the last couple of days, ensuring that it was secure to the hull plate and that the electronics it housed were operational and wired properly, along with being completely waterproof."
     ],
-
-
-    "thumbnail": "https://media.matthewjgonzalez.me/gnor-submarine/Final Print.jpeg",
-
-
+    "thumbnail": "https://media.matthewjgonzalez.me/gnor-submarine/Final%20Print.jpeg",
     "images": [
-    { "src": "https://media.matthewjgonzalez.me/gnor-submarine/Final Print.jpeg", "caption": "The final 3D-printed hull." },
-    { "src": "https://media.matthewjgonzalez.me/gnor-submarine/Team Photo.jpeg", "caption": "From left to right, Tanish Pilli, Felix Lee, Robert Hagerty (EGS Lab Team Leader), Matthew Julian González, Jalol Nazirov. This picture was taken on Great Navel Orange Race 2026 Race Day." },
-    { "src": "https://media.matthewjgonzalez.me/gnor-submarine/First Submarine Sketch.jpeg", "caption": "First rough sketch showing the various planned components in little detail. In this original design, a rudder system and ballast system were proposed, both of which did not make it to the final build." },
-    { "src": "https://media.matthewjgonzalez.me/gnor-submarine/Later Submarine Sketch.jpeg", "caption": "A more refined version of the initial sketch." },
-    { "src": "https://media.matthewjgonzalez.me/gnor-submarine/First Steering System Mockup.jpeg", "caption": "The original proposed rudder system. The later designs were offshoots of this concept." },
-    { "src": "https://media.matthewjgonzalez.me/gnor-submarine/Initial Blind Measurements.jpeg", "caption": "The first proposed measurements for the diameter and length of the cylindrical component of the hull. These measurements ended up being much larger than we could account for and had to be changed, thus the title 'Blind' Measurements." },
-    { "src": "https://media.matthewjgonzalez.me/gnor-submarine/Updated Size Limitations.jpeg", "caption": "" },
-    { "src": "https://media.matthewjgonzalez.me/gnor-submarine/Handheld Prototype - Assembled.jpeg", "caption": "The original submarine design, featuring the old rudder shroud and 'door' concepts scaled down to the size of the palm of ones hand." },
-    { "src": "https://media.matthewjgonzalez.me/gnor-submarine/Handheld Prototype - Cap.jpeg", "caption": "" },
-    { "src": "https://media.matthewjgonzalez.me/gnor-submarine/Handheld Prototype - Iso.jpeg", "caption": "" },
-    { "src": "https://media.matthewjgonzalez.me/gnor-submarine/Hard Work.jpeg", "caption": "Working late at night into the morning of race day." },
-    { "src": "https://media.matthewjgonzalez.me/gnor-submarine/Later Rudder Control System and Rudder Sketches.jpeg", "caption": "A later proposed idea for a rudder control system and 3D printed rudders." },
-    { "src": "https://media.matthewjgonzalez.me/gnor-submarine/Later Steering System Mockup.jpeg", "caption": "A later steering system with measurements and contours more accurate to the submarine's hull design at the time." }
-  ],
-
-
+      {
+        "src": "https://media.matthewjgonzalez.me/gnor-submarine/Final%20Print.jpeg",
+        "caption": "The final 3D-printed hull."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/gnor-submarine/Team%20Photo.jpeg",
+        "caption": "From left to right, Tanish Pilli, Felix Lee, Robert Hagerty (EGS Lab Team Leader), Matthew Julian González, Jalol Nazirov. This picture was taken on Great Navel Orange Race 2026 Race Day."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/gnor-submarine/First%20Submarine%20Sketch.jpeg",
+        "caption": "First rough sketch showing the various planned components in little detail. In this original design, a rudder system and ballast system were proposed, both of which did not make it to the final build."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/gnor-submarine/Later%20Submarine%20Sketch.jpeg",
+        "caption": "A more refined version of the initial sketch."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/gnor-submarine/First%20Steering%20System%20Mockup.jpeg",
+        "caption": "The original proposed rudder system. The later designs were offshoots of this concept."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/gnor-submarine/Initial%20Blind%20Measurements.jpeg",
+        "caption": "The first proposed measurements for the diameter and length of the cylindrical component of the hull. These measurements ended up being much larger than we could account for and had to be changed, thus the title 'Blind' Measurements."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/gnor-submarine/Updated%20Size%20Limitations.jpeg",
+        "caption": ""
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/gnor-submarine/Handheld%20Prototype%20-%20Assembled.jpeg",
+        "caption": "The original submarine design, featuring the old rudder shroud and 'door' concepts scaled down to the size of the palm of ones hand."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/gnor-submarine/Handheld%20Prototype%20-%20Cap.jpeg",
+        "caption": ""
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/gnor-submarine/Handheld%20Prototype%20-%20Iso.jpeg",
+        "caption": ""
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/gnor-submarine/Hard%20Work.jpeg",
+        "caption": "Working late at night into the morning of race day."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/gnor-submarine/Later%20Rudder%20Control%20System%20and%20Rudder%20Sketches.jpeg",
+        "caption": "A later proposed idea for a rudder control system and 3D printed rudders."
+      },
+      {
+        "src": "https://media.matthewjgonzalez.me/gnor-submarine/Later%20Steering%20System%20Mockup.jpeg",
+        "caption": "A later steering system with measurements and contours more accurate to the submarine's hull design at the time."
+      }
+    ],
     "date_start": "2026-01",
-    "date_end":   "2026-04",
-
+    "date_end": "2026-04",
     "skills": [
-  "CAD",
-  "3D Printing",
-  "Sketching",
-  "Prototyping",
-  "Hull Design",
-  "Waterproofing",
-  "Fluid Propulsion",
-  "Electrical Systems",
-  "Team Leadership",
-  "Project Management"
-]
-
-
+      "CAD",
+      "3D Printing",
+      "Sketching",
+      "Prototyping",
+      "Hull Design",
+      "Waterproofing",
+      "Fluid Propulsion",
+      "Electrical Systems",
+      "Team Leadership",
+      "Project Management"
+    ]
   }
 ]
