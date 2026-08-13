@@ -146,7 +146,7 @@
       {
         "src": "https://media.matthewjgonzalez.me/static-fire-rocket-project/Static%20Fire%20Rocket%20Project%20-%20Data%20Analysis.xlsx",
         "title": "Static Fire Rocket Project - Data Analysis",
-        "caption": "Excel file containing all the raw data converted to readable data, as well as the complete impulse graphs and analysis for each motor class."
+        "caption": "Excel file containing all the raw data converted to readable data, and complete analysis."
       }
     ],
     "date_start": "2026-05",

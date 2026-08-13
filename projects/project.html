@@ -254,6 +254,18 @@
       animation: lbFade 0.18s ease;
       display: block;
     }
+
+    /* While the full-size image downloads we show the 160px thumbnail —
+       already cached from the filmstrip, so it appears instantly. Blurring
+       it hides the low resolution and reads as "loading" rather than
+       "broken", which a black rectangle does not. */
+    .lb-img.lb-loading {
+      filter: blur(14px);
+      transform: scale(1.03);
+    }
+    .lb-img {
+      transition: filter 0.25s ease, transform 0.25s ease;
+    }
     @keyframes lbFade {
       from { opacity: 0; transform: scale(0.97); }
       to   { opacity: 1; transform: scale(1); }
@@ -622,10 +634,15 @@
     let lbImages = []; // array of {src, caption} objects
     let lbIndex  = 0;
 
-    // preload the images immediately before and after current index
+    // Preload a window around the current index. ±1 wasn't enough — flick
+    // through at a normal pace and you outrun it immediately, which is what
+    // the black frames were. ±3 covers a fast click-through, and preloads
+    // are cheap since they're transformed and edge-cached.
+    const PRELOAD_RADIUS = 3;
     const preloadCache = new Set();
     function preloadAdjacent(index) {
-      const neighbors = [index - 1, index + 1];
+      const neighbors = [];
+      for (let d = 1; d <= PRELOAD_RADIUS; d++) neighbors.push(index - d, index + d);
       for (const i of neighbors) {
         if (i < 0 || i >= lbImages.length) continue;
         const item = lbImages[i];
@@ -635,6 +652,40 @@
         const img = new Image();
         img.src = imgURL(src, 1800);
       }
+    }
+
+    // Show the cached 160px thumbnail immediately (blurred), then swap in
+    // the full image once it has actually decoded. Assigning .src directly
+    // blanks the element while the new file downloads, which is the black
+    // rectangle you get when clicking through faster than the network.
+    //
+    // `want` guards the race: if you've already moved on by the time a
+    // decode finishes, that result is discarded instead of flashing an
+    // image you've navigated past.
+    function showLightboxImage(lbImg, src) {
+      const full = imgURL(src, 1800);
+
+      lbImg.dataset.want = src;
+      lbImg.dataset.raw  = src;
+      delete lbImg.dataset.fb;
+
+      lbImg.classList.add('lb-loading');
+      lbImg.src = imgURL(src, 160);
+
+      const loader = new Image();
+      loader.src = full;
+      loader.decode()
+        .then(() => {
+          if (lbImg.dataset.want !== src) return;   // user moved on
+          lbImg.src = full;
+          lbImg.classList.remove('lb-loading');
+        })
+        .catch(() => {
+          // Transform unavailable or decode failed — use the original.
+          if (lbImg.dataset.want !== src) return;
+          lbImg.src = src;
+          lbImg.classList.remove('lb-loading');
+        });
     }
 
     let filmstripBuilt = false;
@@ -647,12 +698,18 @@
         if (isVideo(src)) {
           return `<div class="lb-thumb-video" data-index="${i}" title="Video">▶</div>`;
         } else {
-          // 160px wide, lazily loaded. Previously this pulled the full
-          // original for every image in the project just to draw a strip of
-          // 60px squares — 30 photos meant tens of megabytes on open.
+          // At 160px with format=auto these are ~5 KB each, so ~150 KB for a
+          // 30-image strip. Cheaper to just fetch them all than to lazy-load
+          // inside a horizontally scrolling container, where the browser
+          // often doesn't notice thumbnails entering view until too late —
+          // which is exactly why some cells stayed black.
+          //
+          // The exception is when transformations are off: then these are
+          // full-size originals and eager loading would be very bad.
+          const lazy = IMG_CDN ? '' : 'loading="lazy"';
           return `<img class="lb-thumb" src="${imgURL(src, 160)}"
                     data-raw="${src}" data-index="${i}" alt=""
-                    loading="lazy" decoding="async" onerror="${IMG_FALLBACK}">`;
+                    ${lazy} decoding="async" onerror="${IMG_FALLBACK}">`;
         }
       }).join('');
 
@@ -699,11 +756,7 @@
         lbImg.classList.remove('lb-img');
         void lbImg.offsetWidth;
         lbImg.classList.add('lb-img');
-        // 1800px is plenty for a full-screen lightbox even on a retina
-        // display, and a fraction of the original file size.
-        lbImg.dataset.raw = src;
-        delete lbImg.dataset.fb;
-        lbImg.src = imgURL(src, 1800);
+        showLightboxImage(lbImg, src);
       }
 
       // counter
