@@ -30,6 +30,39 @@ deploy-rollback        # revert the last live commit
 
 `deploy-dev` refuses to run if `projects.json` is invalid JSON.
 
+## Writing descriptions in projects.json
+
+Each entry in `description` is one paragraph, rendered through `innerHTML`,
+so **HTML works** — links, `<em>`, `<strong>`.
+
+```json
+"...through <a href='https://www.nakka-rocketry.net/'>Richard Nakka's website</a>, a space..."
+```
+
+Use **single quotes** for HTML attributes. Double quotes end the JSON
+string and break the whole file.
+
+Three rules, all the same underlying one — a JSON string can't contain a
+raw `"` or a line break:
+
+| You want | Write | Not |
+|---|---|---|
+| a link | `href='...'` | `href="..."` |
+| a quoted word | `the 'brains' of` | `the "brains" of` |
+| an inch mark | `1/2\"` or "1/2 inch" | `1/2"` |
+| a new paragraph | a new array entry | a line break inside the string |
+
+The last one is sneaky: pasting two paragraphs into one string looks fine
+in an editor and is invalid JSON.
+
+Check before deploying — `deploy-dev` also refuses to run on bad JSON:
+
+```bash
+python3 -m json.tool projects.json > /dev/null && echo valid
+```
+
+Link styling lives in `.project-desc a` in `custom.css`.
+
 ## Gotchas that have already bitten
 
 - **Unescaped `"` in a caption** breaks all of `projects.json`, and the
