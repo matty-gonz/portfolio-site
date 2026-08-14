@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="../assets/bootstrap/css/bootstrap.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono&family=Kanit:wght@400;600;900&family=Nanum+Gothic:wght@400;700&family=Nanum+Gothic+Coding:wght@400;700&family=Syne:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono&family=Kanit:wght@400;600&family=Nanum+Gothic:wght@400;700&family=Nanum+Gothic+Coding&family=Syne:wght@400;600;700&display=swap">
   <link rel="stylesheet" href="../assets/css/bss-overrides.css">
   <link rel="stylesheet" href="../assets/css/custom.css">
   <style>
@@ -316,7 +316,9 @@
     .lb-counter {
       font-family: 'DM Mono', monospace;
       font-size: 0.78rem;
-      font-weight: 500;
+      /* DM Mono is only loaded at 400, so 500 was already resolving to 400.
+         Stated plainly here so the CSS matches what actually renders. */
+      font-weight: 400;
       letter-spacing: 0.22em;
       color: var(--text);
       background: rgba(255,255,255,0.06);

@@ -57,7 +57,11 @@ main {
 .navbar-brand {
   font-family: 'Kanit', monospace;
   font-size: 1.9rem;
-  font-weight: 900;
+  /* Was 900. Until Aug 2026 only Kanit 400 was loaded, so the browser
+     faked the bold; real 900 came out far heavier than the design that
+     had actually been on screen for a year. 600 matches .card-date-season,
+     so it costs no extra font file. */
+  font-weight: 600;
   letter-spacing: 0.1rem;
   color: var(--text) !important;
   /*text-transform: uppercase;*/
