@@ -55,6 +55,11 @@ raw `"` or a line break:
 The last one is sneaky: pasting two paragraphs into one string looks fine
 in an editor and is invalid JSON.
 
+**If Claude has edited this file, close and reopen it before you edit.**
+A text editor holding the old version in a buffer will overwrite those
+changes the moment you save — which has already silently reverted the
+escaping fixes above once.
+
 Check before deploying — `deploy-dev` also refuses to run on bad JSON:
 
 ```bash

@@ -3,7 +3,7 @@
     "id": "static-fire-rocket-project",
     "title": "Static Fire Testing Platform",
     "subtitle": "Personal",
-    "blurb": "SFRP description / blurb - 'Researched, designed, and constructed a static-fire testing platform for motors up to 20kg of thrust.'",
+    "blurb": "Researched, designed, and constructed a static fire testing platform for solid rocket motors up to 20 kg of thrust; soldered all onboard electronics and built a remote ignition system allowing operation from 20 feet away. Measured total impulse within 2.9% of NAR certified values across five motor tests.",
 
     "description": [
       "This project was intended to be a way for me to gain first-hand experience with electronics and experimental rocketry, as well as project management. There was no concrete deadline or project 'goals' in the conventional sense, as this was self-assigned. The intention was to design a simple, yet sophisticated aerospace-related device to become a more competent engineer in my planning and construction ability, while also pursuing a project more tailored to my major.",
