@@ -6,10 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Matthew Julian González — File</title>
   <link rel="stylesheet" href="../assets/bootstrap/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Acme&display=swap">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Kanit&display=swap">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nanum+Gothic&display=swap">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nanum+Gothic+Coding&display=swap">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono&family=Kanit:wght@400;600;900&family=Nanum+Gothic:wght@400;700&family=Nanum+Gothic+Coding:wght@400;700&family=Syne:wght@400;600;700&display=swap">
   <link rel="stylesheet" href="../assets/css/bss-overrides.css">
   <link rel="stylesheet" href="../assets/css/custom.css">
   <style>
@@ -285,7 +284,7 @@
   </main>
 
   <script src="../assets/bootstrap/js/bootstrap.min.js"></script>
-  <script src="../assets/js/main-4.js"></script>
+  <script src="../assets/js/main.js"></script>
   <script>
     // ── CONFIG ─────────────────────────────────────────────
     // Anything bigger than this renders as a download prompt instead.
@@ -311,70 +310,16 @@
     const CSV_EXTS = ['csv', 'tsv'];
 
     // ── HELPERS ────────────────────────────────────────────
+    // escapeHtml, fileExt, fileLabel, humanSize, FILE_KINDS and kindOf
+    // come from assets/js/main.js, which this page loads.
     const $ = id => document.getElementById(id);
 
-    function escapeHtml(str) {
-      return String(str).replace(/[&<>"']/g, c =>
-        ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
-    }
-
-    function fileExt(src) {
-      const m = src.split('?')[0].match(/\.([a-z0-9]+)$/i);
-      return m ? m[1].toLowerCase() : '';
-    }
-
-    function fileLabel(src) {
+    // Deliberately NOT main.js's fileLabel(): the viewer header shows the
+    // full filename with its extension, where a chip title drops it.
+    function fileNameOf(src) {
       try {
         return decodeURIComponent(src.split('/').pop().split('?')[0]);
       } catch { return 'File'; }
-    }
-
-    function humanSize(bytes) {
-      const n0 = Number(bytes);
-      if (!n0 || !isFinite(n0)) return '';
-      const units = ['B', 'KB', 'MB', 'GB'];
-      let n = n0, u = 0;
-      while (n >= 1024 && u < units.length - 1) { n /= 1024; u++; }
-      return (u === 0 || n >= 10 ? Math.round(n) : n.toFixed(1)) + ' ' + units[u];
-    }
-
-    // Same kind system as the project page, so a chip and its viewer show
-    // the same icon and colour.
-    const KINDS = {
-      doc: {
-        ext: ['pdf','doc','docx','txt','md','markdown','rtf'],
-        color: '#16c1ff',
-        glyph: `<g transform="translate(-1,1)" stroke-linecap="round">
-                  <path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/>
-                  <path d="M14 2v5a1 1 0 0 0 1 1h5"/>
-                  <path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/>
-                </g>`
-      },
-      code: {
-        ext: ['ino','py','c','h','cpp','hpp','js','ts','java','cs','m','rb','go',
-              'rs','sh','ipynb','json','xml','yml','yaml','html','css','sql'],
-        color: '#6ee7a8',
-        glyph: `<g transform="translate(0,1)" stroke-linecap="round">
-                  <path d="M4 12.15V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2h-3.35"/>
-                  <path d="M14 2v5a1 1 0 0 0 1 1h5"/>
-                  <path d="m5 16-3 3 3 3"/><path d="m9 22 3-3-3-3"/>
-                </g>`
-      },
-      data: {
-        ext: ['csv','tsv','xlsx','xls','numbers','db','sqlite','mat'],
-        color: '#b39dfa',
-        glyph: `<g transform="translate(-1,1)" stroke-linecap="round">
-                  <path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/>
-                  <path d="M14 2v5a1 1 0 0 0 1 1h5"/>
-                  <path d="M8 13h2"/><path d="M14 13h2"/>
-                  <path d="M8 17h2"/><path d="M14 17h2"/>
-                </g>`
-      }
-    };
-
-    function kindOf(ext) {
-      for (const [name, k] of Object.entries(KINDS)) if (k.ext.includes(ext)) return name;
-      return 'doc';
     }
 
     function loadScript(url) {
@@ -501,8 +446,8 @@
       }
 
       const ext  = fileExt(src);
-      const kind = KINDS[kindOf(ext)];
-      const name = title || fileLabel(src);
+      const kind = FILE_KINDS[kindOf(src)];
+      const name = title || fileNameOf(src);
 
       document.title = `Matthew Julian González — ${name}`;
       $('file-name').textContent = name;

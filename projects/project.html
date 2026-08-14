@@ -5,10 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Matthew Julian González — Project</title>
   <link rel="stylesheet" href="../assets/bootstrap/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Acme&display=swap">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Kanit&display=swap">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nanum+Gothic&display=swap">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nanum+Gothic+Coding&display=swap">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono&family=Kanit:wght@400;600;900&family=Nanum+Gothic:wght@400;700&family=Nanum+Gothic+Coding:wght@400;700&family=Syne:wght@400;600;700&display=swap">
   <link rel="stylesheet" href="../assets/css/bss-overrides.css">
   <link rel="stylesheet" href="../assets/css/custom.css">
   <style>
@@ -218,6 +217,7 @@
       user-select: none;
       animation: lbFade 0.18s ease;
       display: block;
+      transition: filter 0.25s ease, transform 0.25s ease;
     }
 
     /* While the full-size image downloads we show the 160px thumbnail —
@@ -227,9 +227,6 @@
     .lb-img.lb-loading {
       filter: blur(14px);
       transform: scale(1.03);
-    }
-    .lb-img {
-      transition: filter 0.25s ease, transform 0.25s ease;
     }
     @keyframes lbFade {
       from { opacity: 0; transform: scale(0.97); }
@@ -443,7 +440,7 @@
   </main>
 
   <script src="../assets/bootstrap/js/bootstrap.min.js"></script>
-  <script src="../assets/js/main-4.js"></script>
+  <script src="../assets/js/main.js"></script>
   <script>
     const GALLERY_LIMIT = 4;
 
@@ -476,130 +473,19 @@
       "if(!this.dataset.fb){this.dataset.fb=1;this.src=this.dataset.raw;}" +
       "else{this.style.visibility='hidden';}";
 
-    // ── DOCUMENT ATTACHMENT HELPERS ────────────────────────
-    // Attachments are grouped into kinds. Each kind gets its own glyph
-    // and accent colour so a row of chips is scannable at a glance —
-    // shape carries the meaning, colour reinforces it.
-    //
-    // To support a new extension, add it to the `ext` list of whichever
-    // kind fits. Unknown extensions fall back to `doc`, so nothing ever
-    // breaks — it just gets the generic page icon.
-    const FILE_KINDS = {
-    // Icons are Lucide (MIT), drawn on a 24x24 grid. They're wrapped in a
-    // translate rather than having their path data rewritten — several use
-    // arc commands that are easy to corrupt by hand, and Lucide balances
-    // the set against each other, so rescaling individually would undo
-    // that. Each translate just moves the icon's ink centre onto (11, 13),
-    // which is where the rest of the page expects it.
-    //
-    // Stroke weight is inherited from the <svg> root (1.6), so these come
-    // out lighter than Lucide's default 2 and match the site.
-      doc: {
-        ext: ['pdf', 'doc', 'docx', 'txt', 'md', 'rtf', 'pages'],
-        color: '#16c1ff', dim: 'rgba(22,193,255,0.38)',
-        // lucide file-text — ink centre (12,12)
-        glyph: `<g transform="translate(-1,1)" stroke-linecap="round">
-                  <path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/>
-                  <path d="M14 2v5a1 1 0 0 0 1 1h5"/>
-                  <path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/>
-                </g>`
-      },
-      code: {
-        ext: ['ino', 'py', 'c', 'h', 'cpp', 'hpp', 'js', 'ts', 'java', 'cs',
-              'm', 'rb', 'go', 'rs', 'sh', 'ipynb', 'json', 'xml', 'yml', 'yaml'],
-        color: '#6ee7a8', dim: 'rgba(110,231,168,0.38)',
-        // lucide file-code-corner — ink centre (11,12)
-        //
-        // Previous hand-drawn alternative, kept in case this reads too
-        // busy at 15px — a bare terminal prompt with 45-degree arms:
-        //   <path d="M4.5 7 10.5 13 4.5 19" stroke-linecap="round"/>
-        //   <path d="M12 19h5.5" stroke-linecap="round"/>
-        glyph: `<g transform="translate(0,1)" stroke-linecap="round">
-                  <path d="M4 12.15V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2h-3.35"/>
-                  <path d="M14 2v5a1 1 0 0 0 1 1h5"/>
-                  <path d="m5 16-3 3 3 3"/><path d="m9 22 3-3-3-3"/>
-                </g>`
-      },
-      model: {
-        ext: ['step', 'stp', 'stl', 'f3d', 'sldprt', 'sldasm', 'iges', 'igs',
-              'obj', '3mf', 'dxf', 'dwg', 'ipt', 'iam', 'x_t', 'gltf'],
-        color: '#f2b366', dim: 'rgba(242,179,102,0.38)',
-        // lucide file-box — ink centre (11,12)
-        glyph: `<g transform="translate(0,1)" stroke-linecap="round">
-                  <path d="M14 2v5a1 1 0 0 0 1 1h5"/>
-                  <path d="M14.692 22H18a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v3.804"/>
-                  <path d="M2.264 13.752 7 16.5l4.737-2.748"/>
-                  <path d="M2.995 13.014A2 2 0 0 0 2 14.744v3.516a2 2 0 0 0 .996 1.73l3 1.74a2 2 0 0 0 2.008 0l3-1.74A2 2 0 0 0 12 18.26v-3.517a2 2 0 0 0-.995-1.73l-3-1.742a2 2 0 0 0-1.892-.064z"/>
-                  <path d="M7 16.5V22"/>
-                </g>`
-      },
-      data: {
-        ext: ['csv', 'tsv', 'xlsx', 'xls', 'numbers', 'db', 'sqlite', 'mat'],
-        color: '#b39dfa', dim: 'rgba(179,157,250,0.38)',
-        // lucide file-spreadsheet — ink centre (12,12)
-        glyph: `<g transform="translate(-1,1)" stroke-linecap="round">
-                  <path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/>
-                  <path d="M14 2v5a1 1 0 0 0 1 1h5"/>
-                  <path d="M8 13h2"/><path d="M14 13h2"/>
-                  <path d="M8 17h2"/><path d="M14 17h2"/>
-                </g>`
-      },
-      archive: {
-        ext: ['zip', 'tar', 'gz', 'rar', '7z'],
-        color: '#93a3b8', dim: 'rgba(147,163,184,0.38)',
-        // lucide file-archive — ink centre (12,12)
-        glyph: `<g transform="translate(-1,1)" stroke-linecap="round">
-                  <path d="M13.659 22H18a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v11.5"/>
-                  <path d="M14 2v5a1 1 0 0 0 1 1h5"/>
-                  <path d="M8 12v-1"/><path d="M8 18v-2"/><path d="M8 7V6"/>
-                  <circle cx="8" cy="20" r="2"/>
-                </g>`
-      }
-    };
-
-    function kindOf(src) {
-      const ext = fileExt(src).toLowerCase();
-      for (const [name, k] of Object.entries(FILE_KINDS)) {
-        if (k.ext.includes(ext)) return name;
-      }
-      return 'doc';
-    }
-
-    function glyphFor(src) {
-      const k = FILE_KINDS[kindOf(src)];
-      return `<svg class="doc-glyph" viewBox="0 0 22 26" fill="none"
-          stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"
-          aria-hidden="true">${k.glyph}</svg>`;
-    }
-
-    function escapeHtml(str) {
-      return String(str).replace(/[&<>"']/g, c =>
-        ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
-    }
-
-    // Filename minus path and extension, with %20 etc. decoded — used as
-    // the chip label when a document has no explicit title.
-    function fileLabel(src) {
-      try {
-        return decodeURIComponent(src.split('/').pop().split('?')[0].replace(/\.[^.]+$/, ''));
-      } catch { return 'Document'; }
-    }
-
-    function fileExt(src) {
-      const m = src.split('?')[0].match(/\.([a-z0-9]+)$/i);
-      return m ? m[1].toUpperCase() : 'FILE';
-    }
+    // escapeHtml, fileExt, fileLabel, humanSize, FILE_KINDS, kindOf and
+    // glyphFor all live in assets/js/main.js, which this page loads.
 
     // Types the browser renders natively — straight to a new tab.
-    const NATIVE = ['PDF', 'PNG', 'JPG', 'JPEG', 'GIF', 'WEBP', 'SVG'];
+    const NATIVE = ['pdf', 'png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'];
 
     // Text-ish types viewer.html can present properly: highlighted code,
     // rendered Markdown, CSV as a table. Without the viewer these would
     // dump raw text into a tab or silently download.
     const IN_VIEWER = [
-      'INO','PY','C','H','CPP','HPP','JS','TS','JAVA','CS','M','RB','GO','RS',
-      'SH','JSON','XML','YML','YAML','HTML','CSS','SQL',
-      'TXT','MD','MARKDOWN','CSV','TSV'
+      'ino','py','c','h','cpp','hpp','js','ts','java','cs','m','rb','go','rs',
+      'sh','json','xml','yml','yaml','html','css','sql',
+      'txt','md','markdown','csv','tsv'
     ];
 
     // Which URL a chip actually points at.
@@ -616,24 +502,6 @@
       if (IN_VIEWER.includes(ext)) return 'target="_blank" rel="noopener noreferrer"';
       if (NATIVE.includes(ext))    return 'target="_blank" rel="noopener noreferrer"';
       return 'download';
-    }
-
-    // main-4.js has its own copy of this, but it's scoped inside a block
-    // that only runs on the index page. This one is for project pages.
-    function fetchWithTimeout(url, options, ms) {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), ms);
-      return fetch(url, { ...options, signal: controller.signal })
-        .finally(() => clearTimeout(timer));
-    }
-
-    function humanSize(bytes) {
-      const n0 = Number(bytes);
-      if (!n0 || !isFinite(n0)) return '';
-      const units = ['B', 'KB', 'MB', 'GB'];
-      let n = n0, u = 0;
-      while (n >= 1024 && u < units.length - 1) { n /= 1024; u++; }
-      return (u === 0 || n >= 10 ? Math.round(n) : n.toFixed(1)) + ' ' + units[u];
     }
 
     // R2 is a different origin, so this only works if the bucket sends
@@ -991,7 +859,7 @@
                   ${glyphFor(src)}
                   <span class="doc-text">
                     <span class="doc-title">${escapeHtml(title)}</span>
-                    <span class="doc-sub" data-doc-sub="${i}">${escapeHtml(fileExt(src))}</span>
+                    <span class="doc-sub" data-doc-sub="${i}">${escapeHtml(fileExt(src).toUpperCase())}</span>
                   </span>
                 </a>`;
             }).join('');

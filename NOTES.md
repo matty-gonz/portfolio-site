@@ -2,6 +2,51 @@
 
 Working notes. Update as things change.
 
+## Fonts
+
+All five families load in **one** Google Fonts request, identical in every
+page's `<head>`:
+
+```
+DM Mono · Kanit 400/600/900 · Nanum Gothic 400/700
+Nanum Gothic Coding 400/700 · Syne 400/600/700
+```
+
+`DM Mono` and `Syne` drive 18 rules in `custom.css` but weren't loaded at
+all until Aug 2026 — the Bootstrap Studio export never included their
+`<link>` tags, so they silently fell back to generic `monospace` and
+`sans-serif` and rendered differently on every OS. `Acme` was loaded on
+all five pages and used by zero rules; it's gone.
+
+**Careful: re-exporting from Bootstrap Studio will overwrite the `<head>`
+of these pages** and can undo this. After any export, check that the font
+block still says `css2?family=DM+Mono&…` and not four separate `css?`
+links.
+
+## Where the JavaScript lives
+
+`assets/js/main.js` is loaded by every page. It holds, in order:
+
+1. the starfield canvas (runs only where `#stars` exists)
+2. the mobile nav observer
+3. **shared helpers** — `escapeHtml`, `fileExt`, `fileLabel`, `humanSize`,
+   `FILE_KINDS`, `kindOf`, `glyphFor`, `fetchWithTimeout`
+4. the project card renderer (runs only where `#project-list` exists)
+
+`FILE_KINDS` lives here because `project.html` and `viewer.html` both need
+it. They used to hold separate copies that had to be kept identical by
+hand — don't reintroduce that.
+
+`fileExt()` returns **lowercase**. Uppercase it where it's displayed. The
+`NATIVE` and `IN_VIEWER` lists in `project.html` are lowercase to match.
+
+`viewer.html` has its own `fileNameOf()`, which deliberately differs from
+`fileLabel()`: the viewer header shows the full filename with extension,
+a chip title drops it.
+
+The file was called `main-4.js` — that number was manual cache-busting,
+no longer needed now that nginx sends `Cache-Control: no-cache`.
+
 ## How the site is wired
 
 | Hostname | Cloudflare tunnel → | nginx block | Doc root | Branch |
