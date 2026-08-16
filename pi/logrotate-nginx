@@ -1,0 +1,59 @@
+# ─────────────────────────────────────────────────────────────
+# logrotate-nginx — replaces /etc/logrotate.d/nginx
+#
+# This is the Debian default with ONE meaningful change:
+#   rotate 14  ->  rotate 365
+#
+# That single number is what defines the analytics window. The report
+# is rebuilt from whatever log files still exist, so "keep 365 days of
+# logs" and "show 12 months of stats" are the same setting. There is no
+# second place where retention is configured, and therefore no way for
+# the two to disagree.
+#
+# Install:
+#   sudo cp /etc/logrotate.d/nginx /etc/logrotate.d/nginx.backup
+#   sudo cp pi/logrotate-nginx /etc/logrotate.d/nginx
+#   sudo logrotate -d /etc/logrotate.d/nginx     # dry run, changes nothing
+#
+# Disk cost: compressed nginx logs run roughly 5-10 MB per million
+# requests. A year of portfolio-scale traffic is comfortably under
+# 100 MB. Check with:  du -sh /var/log/nginx
+# ─────────────────────────────────────────────────────────────
+
+/var/log/nginx/*.log {
+	daily
+	missingok
+
+	# The retention window. 365 daily rotations = 1 year.
+	rotate 365
+
+	# Compress old logs. delaycompress leaves the most recent rotation
+	# uncompressed because nginx may still hold the file handle open
+	# for a moment after rotation.
+	compress
+	delaycompress
+
+	notifempty
+
+	# Don't fail the whole run if a log file doesn't exist yet — which
+	# will be the case for portfolio.access.log until nginx is reloaded
+	# with the new config.
+	create 0640 www-data adm
+
+	sharedscripts
+
+	prerotate
+		if [ -d /etc/logrotate.d/httpd-prerotate ]; then \
+			run-parts /etc/logrotate.d/httpd-prerotate; \
+		fi \
+	endscript
+
+	postrotate
+		# Tell nginx to reopen its log files. Without this it keeps
+		# writing to the renamed (rotated) file and the "current" log
+		# stays empty forever.
+		if [ -f /run/nginx.pid ]; then \
+			kill -USR1 `cat /run/nginx.pid`; \
+		fi
+	endscript
+}

@@ -1,0 +1,14 @@
+# Originals live in R2, not git. Keeping them out is what stops the
+# repo ballooning — git stores every version of a binary forever, so a
+# single accidental commit of media/ can't really be undone.
+media/
+Incoming Exports/
+Portfolio.bsdesign
+.DS_Store
+**/.DS_Store
+
+# NOTE: this file used to list itself, which left it untracked and
+# living only on the Mac. That worked right up until it didn't — a
+# fresh clone would have had no ignore rules at all, so the next
+# `deploy-dev` would `git add -A` the whole media/ folder into history.
+# Tracking it means the rules travel with the repo.
