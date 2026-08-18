@@ -35,7 +35,8 @@ deploy
 ls /var/www/html/pi/
 ```
 
-You should see `stats-refresh.sh`, `nginx-stats.conf`, `logrotate-nginx`.
+You should see `stats-refresh.sh`, `nginx-stats.conf`, `nginx-log-anon.conf`,
+`logrotate-nginx`.
 
 ---
 
@@ -101,19 +102,52 @@ server config to anyone who asked.
 
 ---
 
-## 5 — On the pi: give the live site its own log
+## 5 — On the pi: anonymize IPs before they're written
 
-Right now every site writes into the same `access.log`, so there's no way
+Do this **before** step 6, so no complete address is ever written to disk.
+
+Step 4 makes nginx start recording real visitor IPs where it previously
+only ever saw `127.0.0.1`. That's a genuine change in what you're
+responsible for: IP addresses are personal data, and a 1-year window
+means a year of them on an SD card in your room.
+
+This step truncates them at write time — `203.0.113.45` is stored as
+`203.0.113.0`. Nothing sensitive ever lands on the card, so there's
+nothing to protect, leak, or lose with the hardware.
+
+You still get accurate unique-visitor counts and city-level geolocation.
+What you give up is identifying one specific visitor from the pi — and
+Cloudflare still sees full addresses and is where blocking happens
+anyway, so in practice you lose very little.
+
+```bash
+sudo curl -fsSL \
+  https://raw.githubusercontent.com/matty-gonz/portfolio-site/main/pi/nginx-log-anon.conf \
+  -o /etc/nginx/conf.d/log-anon.conf
+
+sudo nginx -t
+```
+
+`nginx -t` must pass before you continue. If it complains about `map`,
+the file landed somewhere other than `conf.d/` — `map` is only legal in
+the http context.
+
+---
+
+## 6 — On the pi: give the live site its own log
+
+Every site currently writes into the same `access.log`, so there's no way
 to report on the portfolio alone.
 
 ```bash
 sudo nano /etc/nginx/sites-available/default
 ```
 
-Inside the `server { }` block, add:
+Inside the `server { }` block, add — note the `anonymized` at the end,
+which selects the format defined in step 5:
 
 ```nginx
-access_log /var/log/nginx/portfolio.access.log;
+access_log /var/log/nginx/portfolio.access.log anonymized;
 ```
 
 Then:
@@ -122,20 +156,27 @@ Then:
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
-**Check:** visit your site in a browser, then:
+**Check — this is the important one.** Visit your site in a browser, then:
 
 ```bash
 sudo tail -3 /var/log/nginx/portfolio.access.log
 ```
 
-You should see your request — and crucially, the first field should be a
-**real public IP, not `127.0.0.1`**. If it's still `127.0.0.1`, step 4
-didn't take effect; don't continue until it's fixed, because every visitor
-would be counted as the same person.
+Read the first field on each line. You want an address **ending in `.0`**,
+like `203.0.113.0`. That confirms both changes at once:
+
+| What you see | What it means |
+|---|---|
+| `203.0.113.0` | Correct. Real visitor, anonymized. |
+| `127.0.0.1` | Step 4 didn't apply. Every visitor counts as one person. |
+| `203.0.113.45` | Step 5 didn't apply. Full IPs are being stored. |
+
+Don't continue until you see an address ending in `.0`. Fixing it later
+means the logs written in between still contain complete addresses.
 
 ---
 
-## 6 — On the pi: 1-year log retention
+## 7 — On the pi: 1-year log retention
 
 ```bash
 sudo cp /etc/logrotate.d/nginx /etc/logrotate.d/nginx.backup
@@ -155,7 +196,7 @@ Read the output for errors. If anything looks wrong:
 
 ---
 
-## 7 — On the pi: install the report generator
+## 8 — On the pi: install the report generator
 
 ```bash
 sudo curl -fsSL \
@@ -174,11 +215,11 @@ ls -lh /var/www/stats/index.html
 ```
 
 You want a non-empty HTML file. If it says "no logs matching", go back to
-step 5.
+step 6.
 
 ---
 
-## 8 — On the pi: country data (optional)
+## 9 — On the pi: country data (optional)
 
 Skip this if you want; everything else works without it. Free, but needs a
 MaxMind account signup.
@@ -197,7 +238,7 @@ edits needed.
 
 ---
 
-## 9 — On the pi: the nginx block for the stats site
+## 10 — On the pi: the nginx block for the stats site
 
 ```bash
 sudo curl -fsSL \
@@ -219,7 +260,7 @@ it's listening on all interfaces — stop and re-check the `listen` lines.
 
 ---
 
-## 10 — On the pi: schedule it
+## 11 — On the pi: schedule it
 
 ```bash
 sudo crontab -e
@@ -233,7 +274,7 @@ Add:
 
 ---
 
-## 11 — Cloudflare: DNS + tunnel
+## 12 — Cloudflare: DNS + tunnel
 
 **DNS** — add a CNAME for `stats` pointing at your tunnel, exactly like the
 `dev` record. Proxy status must be **Proxied** (orange cloud). Grey cloud
@@ -248,7 +289,7 @@ sees.
 
 ---
 
-## 12 — Cloudflare Access: lock it down
+## 13 — Cloudflare Access: lock it down
 
 Zero Trust dashboard → **Access → Applications → Add an application**
 → *Self-hosted*.
@@ -276,7 +317,7 @@ the page contains visitor IP prefixes and your traffic patterns.
 ## Troubleshooting
 
 **Report exists but shows almost nothing**
-Normal at first — it only counts traffic since step 5. Give it a day.
+Normal at first — it only counts traffic since step 6. Give it a day.
 
 **Every visitor is `127.0.0.1`**
 Step 4 didn't apply. Confirm `harden.conf` is `include`d inside the

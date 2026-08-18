@@ -472,6 +472,31 @@ main {
   text-decoration-color: rgba(22,193,255,0.9);
 }
 
+/* ── PRIVACY NOTE (contact.html) ─────────────────────────────────── */
+/* Deliberately quiet — it should be findable, not attention-seeking.
+   Sits below the contact rows with a rule above it so it reads as a
+   footnote rather than part of the contact list. */
+
+.privacy-note {
+  max-width: 420px;
+  margin-top: 2.5rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.72rem;
+  line-height: 1.7;
+  color: var(--text-dim);
+}
+
+.privacy-note-label {
+  display: block;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
 /* ── SCROLLBAR ───────────────────────────────────────────────────── */
 
 ::-webkit-scrollbar {

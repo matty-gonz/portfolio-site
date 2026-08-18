@@ -78,11 +78,15 @@ ARGS=(
     # so it's the last thing we'd want silently missing.
     --enable-panel=REFERRERS
 
-    # Store only the first three octets of each address (1.2.3.0). You
-    # still get accurate unique-visitor counts and correct geolocation,
-    # but the report stops being a list of people's home IP addresses —
-    # so if it ever leaked, it would leak almost nothing. Remove this
-    # if you ever need to identify one specific visitor.
+    # Second layer. nginx already truncates addresses before writing
+    # them (see pi/nginx-log-anon.conf), so by the time we get here the
+    # last octet is a zero and this flag has nothing left to do.
+    #
+    # Kept deliberately: if the log-anon config were ever removed,
+    # overwritten by a package update, or if a log file from before
+    # that change got mixed in, this still prevents complete addresses
+    # from reaching the report. The two protections fail independently,
+    # which is the point of having both.
     --anonymize-ip
 
     # Belt and braces on the 1-year window. logrotate should already
