@@ -1,6 +1,6 @@
 # Private analytics setup — `stats.matthewjgonzalez.me`
 
-Self-hosted GoAccess report, behind Cloudflare Access, rolling 12 months.
+Self-hosted GoAccess report, behind Cloudflare Access, rolling 5 years.
 Everything here is free and open source. Nothing asks for a card, and
 nothing lapses into a paid tier.
 
@@ -108,8 +108,12 @@ Do this **before** step 6, so no complete address is ever written to disk.
 
 Step 4 makes nginx start recording real visitor IPs where it previously
 only ever saw `127.0.0.1`. That's a genuine change in what you're
-responsible for: IP addresses are personal data, and a 1-year window
-means a year of them on an SD card in your room.
+responsible for: IP addresses are personal data, and a 5-year window
+means five years of them on an SD card in your room.
+
+This is also what makes long retention defensible in the first place —
+keeping truncated addresses for years is a very different proposition
+from keeping complete ones.
 
 This step truncates them at write time — `203.0.113.45` is stored as
 `203.0.113.0`. Nothing sensitive ever lands on the card, so there's
@@ -176,7 +180,7 @@ means the logs written in between still contain complete addresses.
 
 ---
 
-## 7 — On the pi: 1-year log retention
+## 7 — On the pi: 5-year log retention
 
 ```bash
 sudo cp /etc/logrotate.d/nginx /etc/logrotate.d/nginx.backup
@@ -193,6 +197,14 @@ sudo logrotate -d /etc/logrotate.d/nginx
 
 Read the output for errors. If anything looks wrong:
 `sudo cp /etc/logrotate.d/nginx.backup /etc/logrotate.d/nginx`
+
+**Changing the window later** is one number: `rotate 260` (weeks) in
+`/etc/logrotate.d/nginx`. The report window follows automatically, since
+it's built from whatever logs still exist. `--keep-last` in
+`stats-refresh.sh` is only a safety net and should be set to match.
+
+At your traffic this is roughly 130 MB compressed over 5 years, so disk
+isn't a real constraint. Check anytime with `du -sh /var/log/nginx`.
 
 ---
 
@@ -269,8 +281,19 @@ sudo crontab -e
 Add:
 
 ```cron
-*/30 * * * * /usr/local/bin/stats-refresh >/dev/null 2>&1
+7 * * * * /usr/local/bin/stats-refresh >/dev/null 2>&1
 ```
+
+Hourly, not every 30 minutes. Each run rebuilds the report from the full
+history, so the work grows with retention — about 50 seconds of CPU once
+5 years have accumulated. Hourly keeps that comfortably in the background.
+The odd minute (`7`) just avoids the top of the hour when everything else
+on the system tends to wake up.
+
+If it ever feels slow, the fix is GoAccess's incremental mode
+(`--persist` / `--restore` / `--db-path`). Worth avoiding until you
+actually need it — incremental mode moves retention into a database and
+reintroduces the pruning problem this design sidesteps.
 
 ---
 
@@ -338,8 +361,18 @@ sudo grep CRON /var/log/syslog | tail
 ```bash
 du -sh /var/log/nginx
 ```
-Lower `rotate 365` in `/etc/logrotate.d/nginx` if needed. The report window
+Lower `rotate 260` in `/etc/logrotate.d/nginx` if needed. The report window
 shrinks to match automatically.
+
+**Backing up the history**
+Long retention on an SD card is only as durable as the card, and cards
+fail without warning. If the data matters to you, copy it off the pi
+periodically — from your Mac:
+```bash
+rsync -avz --ignore-existing pi@<pi-address>:/var/log/nginx/portfolio.access.log.* ~/portfolio-logs/
+```
+Rotated files never change once written, so `--ignore-existing` makes
+repeat runs cheap.
 
 ---
 

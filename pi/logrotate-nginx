@@ -21,11 +21,18 @@
 # ─────────────────────────────────────────────────────────────
 
 /var/log/nginx/*.log {
-	daily
+	# Weekly rather than daily. At 5-year retention, daily rotation
+	# would leave 1,825 files sitting in /var/log/nginx — slower to
+	# glob, slower to stat, and each small file compresses worse than
+	# one larger one. Weekly gives the same coverage in 260 files.
+	weekly
 	missingok
 
-	# The retention window. 365 daily rotations = 1 year.
-	rotate 365
+	# The retention window. 260 weekly rotations = 5 years.
+	# Raise or lower this one number to change how far back the report
+	# goes; nothing else needs editing. (Except --keep-last in
+	# stats-refresh.sh, which is a safety net set to match.)
+	rotate 260
 
 	# Compress old logs. delaycompress leaves the most recent rotation
 	# uncompressed because nginx may still hold the file handle open

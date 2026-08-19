@@ -89,10 +89,11 @@ ARGS=(
     # which is the point of having both.
     --anonymize-ip
 
-    # Belt and braces on the 1-year window. logrotate should already
+    # Belt and braces on the retention window. logrotate should already
     # prevent older data from reaching us; this guarantees it even if
     # the logrotate config gets edited or reset by a package update.
-    --keep-last=365
+    # Set to match `rotate` in pi/logrotate-nginx (260 weeks = 5 years).
+    --keep-last=1825
 
     --real-os
     --html-report-title="matthewjgonzalez.me — rolling 12 months"
@@ -120,7 +121,11 @@ done
 # Written to a temp file in the SAME directory, then moved into place.
 # mv within one filesystem is atomic, so a browser refreshing mid-run
 # sees either the old report or the new one — never a half-written file.
-TMP="$OUT_DIR/.index.html.tmp.$$"
+# The name MUST end in .html — GoAccess picks its output format from the
+# extension and hard-fails on anything else ("Invalid filename extension").
+# So the PID goes in the middle, not on the end. Leading dot keeps it
+# hidden, and nginx-stats.conf denies dotfiles anyway.
+TMP="$OUT_DIR/.stats-tmp.$$.html"
 trap 'rm -f "$TMP"' EXIT
 
 if ! zcat -f -- "${LOGS[@]}" | goaccess "${ARGS[@]}" -o "$TMP"; then
