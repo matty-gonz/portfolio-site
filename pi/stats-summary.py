@@ -75,7 +75,12 @@ days = []
 for row in panel("visitors"):
     raw = str(row.get("data", "")).strip()
     when = None
-    for fmt in ("%d/%b/%Y", "%Y-%m-%d", "%d/%b/%Y:%H"):
+    # The JSON output uses GoAccess's internal date key (20260818),
+    # NOT the 18/Aug/2026 form shown in the HTML dashboard. Getting this
+    # wrong is silent: general totals stay correct while every per-day
+    # number reads zero. %Y%m%d must therefore come first.
+    for fmt in ("%Y%m%d", "%Y%m%d%H", "%Y%m%d%H%M",
+                "%d/%b/%Y", "%d/%b/%Y:%H", "%Y-%m-%d"):
         try:
             when = datetime.strptime(raw, fmt)
             break
@@ -217,24 +222,50 @@ CITY_KEYS = ("city", "geolocation", "location", "country")
 JUNK = {"", "-", "n/a", "na", "unknown", "not found",
         "localhost", "private ip", "reserved"}
 
-cities = {}
-for row in panel("hosts"):
-    label = ""
-    for key in CITY_KEYS:
-        val = row.get(key)
-        if isinstance(val, str) and val.strip().lower() not in JUNK:
-            label = val.strip()
-            break
-    if not label:
-        continue
-    # Some builds emit "United States, Orlando" or "US -> Orlando";
-    # keep the most specific part but stay readable either way.
+def tidy_place(label):
+    """'Madrid, Madrid' -> 'Madrid'; 'US United States' -> 'United States'."""
     for sep in ("->", " | "):
         if sep in label:
             label = label.split(sep)[-1].strip()
-    cities[label] = cities.get(label, 0) + count(row, "visitors")
+    # GoAccess prefixes countries with the ISO code: "US United States".
+    parts = label.split(None, 1)
+    if len(parts) == 2 and len(parts[0]) == 2 and parts[0].isupper():
+        label = parts[1]
+    # City and region are often identical ("Madrid, Madrid").
+    chunks = [c.strip() for c in label.split(",") if c.strip()]
+    if len(chunks) == 2 and chunks[0].lower() == chunks[1].lower():
+        label = chunks[0]
+    return label
+
+
+def collect_cities(metric):
+    out = {}
+    for row in panel("hosts"):
+        label = ""
+        for key in CITY_KEYS:
+            val = row.get(key)
+            if isinstance(val, str) and val.strip().lower() not in JUNK:
+                label = val.strip()
+                break
+        if not label:
+            continue
+        out[tidy_place(label)] = out.get(tidy_place(label), 0) + count(row, metric)
+    return out
+
+
+# Hosts can legitimately report 0 visitors while still having hits — a
+# crawler that was filtered out of the visitor count, for instance. If
+# every city comes back zero, rank by hits instead so the section still
+# says something true rather than a column of noughts.
+cities = collect_cities("visitors")
+if cities and not any(cities.values()):
+    cities = collect_cities("hits")
 
 cities = sorted(cities.items(), key=lambda kv: kv[1], reverse=True)[:6]
+
+# Countries come from the geolocation panel and carry the same ISO
+# prefix, so tidy those too.
+places = [(tidy_place(str(name)), val) for name, val in places]
 
 # ── headline sentence ────────────────────────────────────────────────
 
@@ -550,4 +581,8 @@ if DASH:
               file=sys.stderr)
 
 print(f"summary written: {len(pages)} pages, {len(refs)} referrers, "
-      f"{len(places)} places, {len(days)} days of data")
+      f"{len(places)} countries, {len(cities)} cities, {len(days)} days of data")
+if not days:
+    print("warning: no per-day data parsed — heatmap and 7/30-day counts "
+          "will read zero. Check the date format in the visitors panel.",
+          file=sys.stderr)
