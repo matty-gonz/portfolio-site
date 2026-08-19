@@ -204,6 +204,38 @@ for row in panel("geolocation"):
         places.append((label, count(row, "visitors")))
 places = sorted(places, key=lambda kv: kv[1], reverse=True)[:6]
 
+# ── cities ───────────────────────────────────────────────────────────
+# GoAccess only ever breaks the Geo Location panel down to country.
+# City lives on each row of the HOSTS panel instead, so we aggregate it
+# back up ourselves.
+#
+# Key names have moved between GoAccess versions, so try the likely
+# ones rather than assuming. If none are present the section simply
+# doesn't render — no city database, no section, no error.
+
+CITY_KEYS = ("city", "geolocation", "location", "country")
+JUNK = {"", "-", "n/a", "na", "unknown", "not found",
+        "localhost", "private ip", "reserved"}
+
+cities = {}
+for row in panel("hosts"):
+    label = ""
+    for key in CITY_KEYS:
+        val = row.get(key)
+        if isinstance(val, str) and val.strip().lower() not in JUNK:
+            label = val.strip()
+            break
+    if not label:
+        continue
+    # Some builds emit "United States, Orlando" or "US -> Orlando";
+    # keep the most specific part but stay readable either way.
+    for sep in ("->", " | "):
+        if sep in label:
+            label = label.split(sep)[-1].strip()
+    cities[label] = cities.get(label, 0) + count(row, "visitors")
+
+cities = sorted(cities.items(), key=lambda kv: kv[1], reverse=True)[:6]
+
 # ── headline sentence ────────────────────────────────────────────────
 
 def plural(n, one, many=None):
@@ -457,6 +489,8 @@ HTML = f"""<!DOCTYPE html>
 
   <h2>Countries</h2>
   {rows_html(places, "No location data. Add the GeoLite2 database to enable this.")}
+
+  {f'<h2>Cities</h2>{rows_html(cities, "")}' if cities else ""}
 
   <div class="foot">
     <p>Generated {E(generated)}{f" &middot; busiest day {busiest[0].strftime('%d %b %Y')} with {busiest[1]} visitors" if busiest else ""}
