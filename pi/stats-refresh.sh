@@ -59,6 +59,36 @@ if [ "${#LOGS[@]}" -eq 0 ]; then
     exit 1
 fi
 
+# ── skip when nothing has changed ─────────────────────────────────────
+# This is what makes a short cron interval cheap. Rebuilding the report
+# when not a single new request has arrived burns CPU to produce a
+# byte-identical file. A stat() of the live log costs nothing, so we do
+# that first and bail if the signature matches the last successful run.
+#
+# Signature = number of log files (catches a rotation) + size and mtime
+# of the live log (catches new requests). Pass --force to override.
+STAMP="/var/lib/stats-refresh.stamp"
+live="${LOGS[-1]}"
+SIG="${#LOGS[@]}:$(stat -c '%s:%Y' "$live" 2>/dev/null || echo 0)"
+
+if [ "${1:-}" != "--force" ] \
+   && [ -f "$STAMP" ] && [ -s "$OUT" ] && [ -s "$DASH" ] \
+   && [ "$(cat "$STAMP" 2>/dev/null)" = "$SIG" ]; then
+    exit 0
+fi
+
+# ── exclusions ────────────────────────────────────────────────────────
+# Optional. Managed with `stats-exclude`; see pi/stats-exclude.sh.
+EXCLUDE_CONF="/etc/stats-exclude.conf"
+EXCLUDES=()
+if [ -f "$EXCLUDE_CONF" ]; then
+    if [ "$(sed -n 's/^enabled=//p' "$EXCLUDE_CONF" | tail -1)" != "0" ]; then
+        while IFS= read -r entry; do
+            [ -n "$entry" ] && EXCLUDES+=(--exclude-ip="$entry")
+        done < <(grep -vE '^\s*(#|enabled=|$)' "$EXCLUDE_CONF" || true)
+    fi
+fi
+
 ARGS=(
     -                                   # read the log from stdin
     --log-format=COMBINED
@@ -147,7 +177,8 @@ trap 'rm -f "$TMP_HTML" "$TMP_JSON" "$TMP_SUM"' EXIT
 # One pass, two outputs. The HTML is the full dashboard; the JSON is the
 # same data in a form the summary generator can read. Running GoAccess
 # once rather than twice means the two can never disagree.
-if ! zcat -f -- "${LOGS[@]}" | goaccess "${ARGS[@]}" -o "$TMP_HTML" -o "$TMP_JSON"; then
+if ! zcat -f -- "${LOGS[@]}" | goaccess "${ARGS[@]}" "${EXCLUDES[@]+"${EXCLUDES[@]}"}" \
+        -o "$TMP_HTML" -o "$TMP_JSON"; then
     log "goaccess failed; keeping the previous report"
     exit 1
 fi
@@ -160,24 +191,42 @@ install_file() {   # $1 = temp file, $2 = destination
     mv -f "$1" "$2"
 }
 
-# The full dashboard always gets published.
-install_file "$TMP_HTML" "$DASH"
-
-# The plain-English summary is a nice-to-have layered on top. If it
-# fails we say so and keep the previous one rather than taking the
-# whole report down with it — a broken summary shouldn't cost you the
-# dashboard that was working fine a second ago.
+# The summary runs BEFORE either file is published, because it also
+# injects the "back to summary" link into the dashboard — patching the
+# temp copy means a half-written link can never reach the live page.
+#
+# The summary is a nice-to-have layered on top. If it fails we say so
+# and publish the dashboard anyway; a formatting bug in the summary
+# shouldn't cost you the report that was working a second ago.
+SUMMARY_OK=0
 if [ -s "$TMP_JSON" ] && [ -x "$SUMMARY_BIN" ]; then
-    if "$SUMMARY_BIN" "$TMP_JSON" "$TMP_SUM" 2>&1 | sed 's/^/[summary] /' >&2; then
-        [ -s "$TMP_SUM" ] && install_file "$TMP_SUM" "$OUT"
+    if "$SUMMARY_BIN" "$TMP_JSON" "$TMP_SUM" "$TMP_HTML" 2>&1 \
+         | sed 's/^/[summary] /' >&2; then
+        [ -s "$TMP_SUM" ] && SUMMARY_OK=1
     else
-        log "summary generation failed; dashboard updated, summary left as-is"
+        log "summary generation failed; publishing dashboard only"
     fi
 elif [ ! -x "$SUMMARY_BIN" ]; then
     log "note: $SUMMARY_BIN not installed — publishing dashboard only"
-    [ -f "$OUT" ] || { cp "$DASH" "$OUT"; chown www-data:www-data "$OUT"; }
+fi
+
+install_file "$TMP_HTML" "$DASH"
+
+if [ "$SUMMARY_OK" -eq 1 ]; then
+    install_file "$TMP_SUM" "$OUT"
+elif [ ! -f "$OUT" ]; then
+    # First run with no working summary — make the landing page the
+    # dashboard rather than a 404.
+    cp -f "$DASH" "$OUT"
+    chown www-data:www-data "$OUT"
+    chmod 640 "$OUT"
 fi
 
 trap - EXIT
 
-log "wrote $OUT + $DASH from ${#LOGS[@]} log file(s)"
+# Record the signature only after a fully successful run, so a failure
+# never causes the next run to skip.
+mkdir -p "$(dirname "$STAMP")"
+printf '%s' "$SIG" > "$STAMP"
+
+log "wrote $OUT + $DASH from ${#LOGS[@]} log file(s)${EXCLUDES:+ (${#EXCLUDES[@]} exclusion(s))}"

@@ -3,7 +3,13 @@
 stats-summary — turn GoAccess JSON into a page a human can read.
 
 Install to /usr/local/bin/stats-summary (mode 755).
-Called by stats-refresh:  stats-summary <input.json> <output.html>
+Called by stats-refresh:
+    stats-summary <input.json> <output.html> [dashboard.html]
+
+The optional third argument is the GoAccess dashboard, which gets a
+"back to summary" link injected into it. GoAccess has no idea our
+summary page exists, so without this the dashboard is a dead end you
+can only leave with the browser back button.
 
 WHY THIS EXISTS
 GoAccess answers "what is my server doing", which is the right question
@@ -26,10 +32,11 @@ from datetime import datetime, timedelta
 
 # ── input ────────────────────────────────────────────────────────────
 
-if len(sys.argv) != 3:
-    sys.exit("usage: stats-summary <input.json> <output.html>")
+if len(sys.argv) not in (3, 4):
+    sys.exit("usage: stats-summary <input.json> <output.html> [dashboard.html]")
 
 SRC, DEST = sys.argv[1], sys.argv[2]
+DASH = sys.argv[3] if len(sys.argv) == 4 else None
 
 try:
     with open(SRC, encoding="utf-8", errors="replace") as fh:
@@ -218,7 +225,97 @@ if pages:
 lead_extra = " ".join(bits)
 
 E = html.escape
-generated = datetime.now().strftime("%A %d %B %Y, %H:%M")
+
+# 12-hour clock with the zone name. astimezone() picks up the pi's
+# configured timezone (set to America/New_York in step 3), so %Z prints
+# EDT or EST correctly and follows daylight saving without help.
+# %-I / %-d strip leading zeros — glibc extensions, fine on the pi.
+_now = datetime.now().astimezone()
+try:
+    generated = _now.strftime("%A %-d %B %Y at %-I:%M %p %Z").strip()
+except ValueError:                     # non-glibc strftime
+    generated = _now.strftime("%A %d %B %Y at %I:%M %p %Z").strip()
+
+
+# ── daily heatmap ────────────────────────────────────────────────────
+# A calendar grid, one square per day, darker to brighter with more
+# visitors. Reads at a glance in a way a table of numbers doesn't:
+# quiet stretches, the spike after you post something, weekly rhythm.
+
+def heatmap_html(day_rows, min_weeks=13, max_weeks=53):
+    if not day_rows:
+        return '<p class="empty">No data yet — this fills in a square per day.</p>'
+
+    by_date = {d.date(): v for d, v, _ in day_rows}
+    peak = max(by_date.values()) if by_date else 0
+
+    last = max(max(by_date), _now.date())
+    # Extend to the end of the current week so the grid ends on a full
+    # column (weeks run Sunday..Saturday; weekday() has Saturday == 5).
+    last += timedelta(days=(5 - last.weekday()) % 7)
+
+    span_weeks = ((last - min(by_date)).days // 7) + 2
+    weeks = max(min_weeks, min(span_weeks, max_weeks))
+    first = last - timedelta(days=weeks * 7 - 1)
+
+    def level(n):
+        if not n:
+            return 0
+        if not peak:
+            return 1
+        return min(4, int(n / peak * 4) + 1)
+
+    cells = []
+    day = first
+    while day <= last:
+        n = by_date.get(day, 0)
+        # Future days in the current week get no tile at all, so the
+        # grid doesn't imply we measured days that haven't happened.
+        if day > _now.date():
+            cells.append('<i class="c blank"></i>')
+        else:
+            label = f"{day.strftime('%a %-d %b %Y')}: {n} visitor{'' if n == 1 else 's'}"
+            cells.append(f'<i class="c l{level(n)}" title="{E(label)}"></i>')
+        day += timedelta(days=1)
+
+    legend = "".join(f'<i class="c l{i}"></i>' for i in range(5))
+    return (
+        f'<div class="hm" style="grid-template-columns:repeat({weeks},11px)">'
+        + "".join(cells) +
+        '</div>'
+        f'<div class="hm-foot"><span>{E(first.strftime("%-d %b %Y"))}</span>'
+        f'<span class="hm-key">less {legend} more</span>'
+        f'<span>{E(last.strftime("%-d %b %Y"))}</span></div>'
+    )
+
+
+# ── time of day ──────────────────────────────────────────────────────
+
+def hours_html():
+    rows = panel("visit_times")
+    if not rows:
+        return ""
+    buckets = {}
+    for row in rows:
+        raw = str(row.get("data", "")).strip()
+        digits = "".join(ch for ch in raw if ch.isdigit())[:2]
+        if digits:
+            buckets[int(digits)] = buckets.get(int(digits), 0) + count(row, "visitors")
+    if not buckets:
+        return ""
+    top = max(buckets.values()) or 1
+    bars = []
+    for hr in range(24):
+        n = buckets.get(hr, 0)
+        pct = max(round(n / top * 100), 3) if n else 2
+        ampm = "12a" if hr == 0 else ("12p" if hr == 12 else
+                                      (f"{hr}a" if hr < 12 else f"{hr - 12}p"))
+        tick = ampm if hr % 6 == 0 else ""
+        bars.append(
+            f'<div class="hb" title="{ampm} — {n} visitor{"" if n == 1 else "s"}">'
+            f'<span style="height:{pct}%"></span><b>{tick}</b></div>'
+        )
+    return ('<h2>Time of day</h2><div class="hours">' + "".join(bars) + '</div>')
 
 
 def rows_html(items, empty):
@@ -290,6 +387,34 @@ HTML = f"""<!DOCTYPE html>
           font-size:0.78rem; color:var(--accent); padding-left:1rem; }}
   .empty {{ color:var(--dim); font-size:0.85rem; font-style:italic; margin:0; }}
 
+  /* Calendar heatmap. grid-auto-flow:column fills top-to-bottom then
+     left-to-right, so each column is one Sun..Sat week. */
+  .hm {{ display:grid; grid-auto-flow:column; grid-template-rows:repeat(7,11px);
+         gap:3px; overflow-x:auto; padding-bottom:2px; }}
+  .c {{ width:11px; height:11px; border-radius:2px; display:block;
+        background:var(--surface-2); }}
+  .c.blank {{ background:transparent; }}
+  .c.l0 {{ background:rgba(255,255,255,0.035); }}
+  .c.l1 {{ background:rgba(22,193,255,0.22); }}
+  .c.l2 {{ background:rgba(22,193,255,0.42); }}
+  .c.l3 {{ background:rgba(22,193,255,0.66); }}
+  .c.l4 {{ background:rgba(22,193,255,0.95); }}
+  .hm-foot {{ display:flex; align-items:center; justify-content:space-between;
+              gap:1rem; margin-top:0.6rem; font-size:0.62rem; color:var(--dim);
+              font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }}
+  .hm-key {{ display:flex; align-items:center; gap:3px; }}
+
+  /* Hourly distribution */
+  .hours {{ display:flex; align-items:flex-end; gap:3px; height:74px; }}
+  .hb {{ flex:1; display:flex; flex-direction:column; justify-content:flex-end;
+         align-items:center; height:100%; position:relative; }}
+  .hb span {{ width:100%; background:rgba(22,193,255,0.42); border-radius:2px 2px 0 0;
+              display:block; min-height:2px; }}
+  .hb b {{ font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-weight:400;
+           font-size:0.52rem; color:var(--dim); margin-top:5px; height:0.7rem;
+           white-space:nowrap; }}
+  .hb:hover span {{ background:rgba(22,193,255,0.85); }}
+
   .foot {{ margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--border);
            display:flex; flex-wrap:wrap; gap:1rem; align-items:center;
            justify-content:space-between; }}
@@ -319,6 +444,11 @@ HTML = f"""<!DOCTYPE html>
       <div class="note">{bot_hits} of {total_requests} hits, excluded</div></div>
   </div>
 
+  <h2>Visits per day</h2>
+  {heatmap_html(days)}
+
+  {hours_html()}
+
   <h2>Most viewed pages</h2>
   {rows_html(pages, "No page views recorded yet.")}
 
@@ -342,6 +472,48 @@ try:
         fh.write(HTML)
 except Exception as exc:                       # noqa: BLE001
     sys.exit(f"could not write {DEST}: {exc}")
+
+
+# ── back link on the dashboard ───────────────────────────────────────
+# Bottom-right and fixed, which is empty space in the GoAccess layout —
+# the top is its header and the left is its sidebar, so anchoring there
+# would cover controls. Styles are inline because we're injecting into
+# someone else's document and must not depend on, or disturb, its CSS.
+
+BACK_LINK = (
+    '<a href="index.html" id="back-to-summary" style="'
+    'position:fixed;right:18px;bottom:18px;z-index:99999;'
+    'font-family:ui-monospace,SFMono-Regular,Menlo,monospace;'
+    'font-size:11px;letter-spacing:0.14em;text-transform:uppercase;'
+    'color:#16c1ff;background:#0b1220;'
+    'border:1px solid rgba(126,200,227,0.35);border-radius:4px;'
+    'padding:10px 16px;text-decoration:none;'
+    'box-shadow:0 6px 22px rgba(0,0,0,0.5);'
+    '">&#8592; Back to summary</a>'
+)
+
+if DASH:
+    try:
+        with open(DASH, encoding="utf-8", errors="replace") as fh:
+            doc = fh.read()
+
+        if "back-to-summary" in doc:
+            pass                                   # already patched
+        elif "</body>" in doc:
+            # Insert before </body> so it can't land inside <head> or
+            # break a script block partway through.
+            doc = doc.replace("</body>", BACK_LINK + "</body>", 1)
+            with open(DASH, "w", encoding="utf-8") as fh:
+                fh.write(doc)
+        else:
+            # No recognisable body close — append rather than give up.
+            with open(DASH, "a", encoding="utf-8") as fh:
+                fh.write(BACK_LINK)
+    except Exception as exc:                       # noqa: BLE001
+        # Never fatal. A dashboard without a back button is a small
+        # annoyance; no dashboard at all is not.
+        print(f"warning: could not add back link to {DASH}: {exc}",
+              file=sys.stderr)
 
 print(f"summary written: {len(pages)} pages, {len(refs)} referrers, "
       f"{len(places)} places, {len(days)} days of data")

@@ -224,6 +224,11 @@ sudo curl -fsSL \
   -o /usr/local/bin/stats-summary
 sudo chmod 755 /usr/local/bin/stats-summary
 
+sudo curl -fsSL \
+  https://raw.githubusercontent.com/matty-gonz/portfolio-site/main/pi/stats-exclude.sh \
+  -o /usr/local/bin/stats-exclude
+sudo chmod 755 /usr/local/bin/stats-exclude
+
 sudo mkdir -p /var/www/stats
 sudo chown www-data:www-data /var/www/stats
 ```
@@ -300,19 +305,22 @@ sudo crontab -e
 Add:
 
 ```cron
-7 * * * * /usr/local/bin/stats-refresh >/dev/null 2>&1
+*/5 * * * * /usr/local/bin/stats-refresh >/dev/null 2>&1
 ```
 
-Hourly, not every 30 minutes. Each run rebuilds the report from the full
-history, so the work grows with retention — about 50 seconds of CPU once
-5 years have accumulated. Hourly keeps that comfortably in the background.
-The odd minute (`7`) just avoids the top of the hour when everything else
-on the system tends to wake up.
+Every 5 minutes, which is cheap because the script checks first whether
+anything changed. It compares the live log's size and modification time
+against the last successful run and exits immediately if they match — so
+a run with no new visitors costs one `stat()` call, not a rebuild. On a
+quiet night that's ~288 no-ops a day and no measurable load.
 
-If it ever feels slow, the fix is GoAccess's incremental mode
-(`--persist` / `--restore` / `--db-path`). Worth avoiding until you
-actually need it — incremental mode moves retention into a database and
-reintroduces the pruning problem this design sidesteps.
+When there *is* new traffic it does the full rebuild, which is about a
+second today and grows with retention. If it ever feels slow years from
+now, raise the interval — or switch to GoAccess's incremental mode
+(`--persist` / `--restore` / `--db-path`), though that moves retention
+into a database and reintroduces the pruning problem this design avoids.
+
+Force a rebuild any time with `sudo stats-refresh --force`.
 
 ---
 
@@ -353,6 +361,33 @@ Same one-time-code flow as the dev site.
 If step 1 shows you the report without asking for a login, the Access
 policy isn't attached to the hostname. Fix that before leaving it up —
 the page contains visitor IP prefixes and your traffic patterns.
+
+---
+
+## Leaving yourself out of the stats
+
+Your own visits will otherwise dominate the numbers early on.
+
+```bash
+sudo stats-exclude me      # detect this network and exclude it
+sudo stats-exclude list    # show the list and whether it's active
+sudo stats-exclude off     # keep the list, count everyone again
+sudo stats-exclude on
+sudo stats-exclude clear   # empty it
+sudo stats-refresh --force # apply immediately
+```
+
+`me` works because your Mac and the pi share one public IP behind your
+home router — so the pi asking "what's my address?" gets yours too.
+
+**Only run `me` at home.** Logs store truncated addresses, so exclusions
+are `/24`-wide. On your home ISP that's you and maybe a few neighbours.
+On campus wifi it would cover thousands of people and quietly delete real
+visitors from your stats. If that happens: `sudo stats-exclude clear`.
+
+Your home IP changes occasionally; re-run `me` when it does. The
+dashboard's **Excl. IP Hits** box shows how many requests were dropped,
+which is how you can tell it's still matching.
 
 ---
 
