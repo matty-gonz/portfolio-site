@@ -210,11 +210,20 @@ isn't a real constraint. Check anytime with `du -sh /var/log/nginx`.
 
 ## 8 — On the pi: install the report generator
 
+Two files: the generator, and the summary builder that turns GoAccess's
+output into readable English.
+
 ```bash
 sudo curl -fsSL \
   https://raw.githubusercontent.com/matty-gonz/portfolio-site/main/pi/stats-refresh.sh \
   -o /usr/local/bin/stats-refresh
 sudo chmod 755 /usr/local/bin/stats-refresh
+
+sudo curl -fsSL \
+  https://raw.githubusercontent.com/matty-gonz/portfolio-site/main/pi/stats-summary.py \
+  -o /usr/local/bin/stats-summary
+sudo chmod 755 /usr/local/bin/stats-summary
+
 sudo mkdir -p /var/www/stats
 sudo chown www-data:www-data /var/www/stats
 ```
@@ -223,11 +232,21 @@ sudo chown www-data:www-data /var/www/stats
 
 ```bash
 sudo /usr/local/bin/stats-refresh
-ls -lh /var/www/stats/index.html
+ls -lh /var/www/stats/
 ```
 
-You want a non-empty HTML file. If it says "no logs matching", go back to
-step 6.
+You want **two** files: `index.html` (the plain-English summary, your
+landing page) and `dashboard.html` (the full GoAccess report, linked from
+the bottom of the summary).
+
+If it says "no logs matching", go back to step 6. If it says
+`stats-summary not installed`, the second curl didn't land — the
+dashboard still publishes, so nothing is broken, you just don't get the
+summary.
+
+> The summary is deliberately non-fatal. If it ever fails, the dashboard
+> still updates and the old summary stays put, rather than a formatting
+> bug costing you the whole report.
 
 ---
 

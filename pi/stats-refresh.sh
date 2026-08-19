@@ -27,7 +27,9 @@ set -euo pipefail
 LOG_DIR="/var/log/nginx"
 LOG_BASE="portfolio.access.log"
 OUT_DIR="/var/www/stats"
-OUT="$OUT_DIR/index.html"
+OUT="$OUT_DIR/index.html"          # plain-English summary (the landing page)
+DASH="$OUT_DIR/dashboard.html"     # full GoAccess dashboard
+SUMMARY_BIN="/usr/local/bin/stats-summary"
 
 log() { echo "[stats-refresh] $*" >&2; }
 
@@ -78,6 +80,18 @@ ARGS=(
     # so it's the last thing we'd want silently missing.
     --enable-panel=REFERRERS
 
+    # Hide panels that are meaningful for a busy application server and
+    # pure noise for a portfolio. Every one of these was answering a
+    # question you will never ask, while making the ones you do ask
+    # harder to find.
+    --ignore-panel=REQUESTS_STATIC   # every font and image, individually
+    --ignore-panel=KEYPHRASES        # dead: Google stopped sending these
+    --ignore-panel=REMOTE_USER       # you have no HTTP auth
+    --ignore-panel=CACHE_STATUS      # not logged in our format
+    --ignore-panel=MIME_TYPE         # not logged in our format
+    --ignore-panel=TLS_TYPE          # not logged; TLS terminates at Cloudflare
+    --ignore-panel=VIRTUAL_HOSTS     # one host per log file already
+
     # Second layer. nginx already truncates addresses before writing
     # them (see pi/nginx-log-anon.conf), so by the time we get here the
     # last octet is a zero and this flag has nothing left to do.
@@ -121,23 +135,49 @@ done
 # Written to a temp file in the SAME directory, then moved into place.
 # mv within one filesystem is atomic, so a browser refreshing mid-run
 # sees either the old report or the new one — never a half-written file.
-# The name MUST end in .html — GoAccess picks its output format from the
-# extension and hard-fails on anything else ("Invalid filename extension").
-# So the PID goes in the middle, not on the end. Leading dot keeps it
-# hidden, and nginx-stats.conf denies dotfiles anyway.
-TMP="$OUT_DIR/.stats-tmp.$$.html"
-trap 'rm -f "$TMP"' EXIT
+# Names MUST end in .html/.json — GoAccess picks its output format from
+# the extension and hard-fails on anything else ("Invalid filename
+# extension"). So the PID goes in the middle, not on the end. Leading
+# dot keeps them hidden, and nginx-stats.conf denies dotfiles anyway.
+TMP_HTML="$OUT_DIR/.stats-tmp.$$.html"
+TMP_JSON="$OUT_DIR/.stats-tmp.$$.json"
+TMP_SUM="$OUT_DIR/.stats-sum.$$.html"
+trap 'rm -f "$TMP_HTML" "$TMP_JSON" "$TMP_SUM"' EXIT
 
-if ! zcat -f -- "${LOGS[@]}" | goaccess "${ARGS[@]}" -o "$TMP"; then
+# One pass, two outputs. The HTML is the full dashboard; the JSON is the
+# same data in a form the summary generator can read. Running GoAccess
+# once rather than twice means the two can never disagree.
+if ! zcat -f -- "${LOGS[@]}" | goaccess "${ARGS[@]}" -o "$TMP_HTML" -o "$TMP_JSON"; then
     log "goaccess failed; keeping the previous report"
     exit 1
 fi
 
-[ -s "$TMP" ] || { log "goaccess produced an empty file; keeping previous report"; exit 1; }
+[ -s "$TMP_HTML" ] || { log "goaccess produced an empty report; keeping previous"; exit 1; }
 
-chown www-data:www-data "$TMP"
-chmod 640 "$TMP"
-mv -f "$TMP" "$OUT"
+install_file() {   # $1 = temp file, $2 = destination
+    chown www-data:www-data "$1"
+    chmod 640 "$1"
+    mv -f "$1" "$2"
+}
+
+# The full dashboard always gets published.
+install_file "$TMP_HTML" "$DASH"
+
+# The plain-English summary is a nice-to-have layered on top. If it
+# fails we say so and keep the previous one rather than taking the
+# whole report down with it — a broken summary shouldn't cost you the
+# dashboard that was working fine a second ago.
+if [ -s "$TMP_JSON" ] && [ -x "$SUMMARY_BIN" ]; then
+    if "$SUMMARY_BIN" "$TMP_JSON" "$TMP_SUM" 2>&1 | sed 's/^/[summary] /' >&2; then
+        [ -s "$TMP_SUM" ] && install_file "$TMP_SUM" "$OUT"
+    else
+        log "summary generation failed; dashboard updated, summary left as-is"
+    fi
+elif [ ! -x "$SUMMARY_BIN" ]; then
+    log "note: $SUMMARY_BIN not installed — publishing dashboard only"
+    [ -f "$OUT" ] || { cp "$DASH" "$OUT"; chown www-data:www-data "$OUT"; }
+fi
+
 trap - EXIT
 
-log "wrote $OUT from ${#LOGS[@]} log file(s)"
+log "wrote $OUT + $DASH from ${#LOGS[@]} log file(s)"
