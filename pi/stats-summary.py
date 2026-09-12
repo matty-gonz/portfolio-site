@@ -311,6 +311,7 @@ def parse_ts(raw):
 
 sessions = {}
 ev_count = 0
+excluded_events = 0
 
 if EVENTS and os.path.exists(EVENTS):
     try:
@@ -328,6 +329,13 @@ if EVENTS and os.path.exists(EVENTS):
 
                 when = parse_ts(ts)
                 if not when or not sid or sid == "-":
+                    continue
+
+                # Self-excluded browser (visited /?me=1). Marked on the
+                # session id rather than by IP, because IP exclusion on
+                # shared apartment wifi would take out the neighbours too.
+                if sid.startswith("x-"):
+                    excluded_events += 1
                     continue
 
                 ev_count += 1
@@ -648,6 +656,30 @@ def signal_html():
     return '<h2>High-signal actions</h2>' + rows_html(items, "")
 
 
+CAMPAIGN_NICE = {
+    "resume":           "Resume",
+    "resume-projects":  "Resume — projects line",
+    "linkedin":         "LinkedIn profile",
+    "linkedin-post":    "LinkedIn post",
+    "github":           "GitHub profile",
+    "card":             "Business card / QR",
+    "email":            "Email signature",
+    "handshake":        "Handshake",
+}
+
+
+def nice_campaign(tag):
+    """Known tags get a proper label; anything else is made readable.
+    So `linkedin-post-sfrp` still renders as 'LinkedIn post — sfrp'
+    rather than being dropped or shown raw."""
+    if tag in CAMPAIGN_NICE:
+        return CAMPAIGN_NICE[tag]
+    for known in sorted(CAMPAIGN_NICE, key=len, reverse=True):
+        if tag.startswith(known + "-"):
+            return f"{CAMPAIGN_NICE[known]} — {tag[len(known) + 1:]}"
+    return tag.replace("-", " ").replace("_", " ").capitalize()
+
+
 def campaign_html():
     if not HAS_EVENTS:
         return ""
@@ -657,8 +689,9 @@ def campaign_html():
                 'profile, <code>?from=card</code> to a QR code. Most visits arrive '
                 'with no referrer at all, so tagging is the only reliable way to '
                 'know which channel works.</p>')
+    ranked = sorted(campaigns.items(), key=lambda kv: kv[1], reverse=True)[:8]
     return '<h2>Tagged links</h2>' + rows_html(
-        sorted(campaigns.items(), key=lambda kv: kv[1], reverse=True)[:8], "")
+        [(nice_campaign(k), v) for k, v in ranked], "")
 
 
 ENGAGE_HTML = (funnel_html() + pages_engagement_html()
@@ -879,7 +912,9 @@ if DASH:
               file=sys.stderr)
 
 print(f"summary written: {len(pages)} pages, {len(refs)} referrers, "
-      f"{len(places)} countries, {len(cities)} cities, {len(days)} days of data")
+      f"{len(places)} countries, {len(cities)} cities, {len(days)} days of data, "
+      f"{len(sessions)} sessions"
+      + (f" ({excluded_events} self-excluded events skipped)" if excluded_events else ""))
 if not days:
     print("warning: no per-day data parsed — heatmap and 7/30-day counts "
           "will read zero. Check the date format in the visitors panel.",

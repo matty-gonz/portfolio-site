@@ -92,6 +92,25 @@
     sid = 'nostore';                          // private mode: still count the view
   }
 
+  // ── self-exclusion ──────────────────────────────────────────────
+  // Visit /?me=1 once on a browser and everything it sends from then
+  // on is prefixed x- , which the parser discards. /?me=0 undoes it.
+  //
+  // Why not exclude by IP: Matty is on shared apartment wifi, so one
+  // address covers the whole building. Excluding it would silently
+  // delete any neighbour who visits. This marks the BROWSER instead —
+  // precise, survives the IP changing, and works from campus too.
+  //
+  // localStorage, not sessionStorage, so it outlives the tab.
+  try {
+    var mm = location.search.match(/[?&]me=([01])/);
+    if (mm) {
+      if (mm[1] === '1') localStorage.setItem('_x', '1');
+      else localStorage.removeItem('_x');
+    }
+    if (localStorage.getItem('_x') === '1') sid = 'x-' + sid;
+  } catch (e) { /* storage blocked: just count normally */ }
+
   // Hostname only. A full referrer URL can carry search terms and
   // private path info that is none of our business.
   var ref = '';

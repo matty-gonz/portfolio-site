@@ -20,6 +20,50 @@ export PORTFOLIO_DIR="$HOME/Documents/Bootstrap Studio/Portfolio Site Files"
 # "parse error near ()". Clear it first.
 unalias deploy      2>/dev/null
 unalias deploy-dev  2>/dev/null
+unalias backup-logs 2>/dev/null
+
+export PI_HOST="${PI_HOST:-mattyg@american-pi}"
+export PI_LOG_BACKUP="${PI_LOG_BACKUP:-$HOME/Documents/portfolio-logs}"
+
+# ─────────────────────────────────────────────────────────────
+# backup-logs — copy the analytics history off the pi.
+#
+# The pi keeps 5 years of traffic history on a single SD card. Cards
+# fail without warning, and this is the only data on the whole system
+# that cannot be regenerated — the site, configs and scripts all live
+# in git, but a deleted log is gone.
+#
+# PULL, not push: your Mac reaches out to the pi. The pi therefore
+# holds no credentials for anywhere, and a compromised pi cannot reach
+# or destroy the backups. Push-based backups have the opposite property.
+#
+# Rotated logs never change once written, so this is cheap to re-run.
+# Even once a semester turns "lost everything" into "lost a few weeks".
+# ─────────────────────────────────────────────────────────────
+backup-logs() {
+  local dest="$PI_LOG_BACKUP"
+  local stamp="$(date +%Y-%m-%d)"
+  mkdir -p "$dest" || { echo "can't create $dest"; return 1; }
+
+  echo "Packing logs on $PI_HOST (sudo password may be requested)..."
+  # Built on the pi first rather than streamed: ssh -t allocates a
+  # terminal so sudo can prompt, and a terminal mangles binary data in
+  # transit. Writing a file, then copying it, avoids that entirely.
+  ssh -t "$PI_HOST" '
+    sudo tar czf /tmp/portfolio-logs.tgz -C /var/log/nginx \
+         --ignore-failed-read portfolio.access.log* events.log* 2>/dev/null
+    sudo chown "$USER" /tmp/portfolio-logs.tgz
+  ' || { echo "pack failed — nothing copied."; return 1; }
+
+  if ! scp -q "$PI_HOST:/tmp/portfolio-logs.tgz" "$dest/logs-$stamp.tgz"; then
+    echo "copy failed — the archive is still at /tmp on the pi."
+    return 1
+  fi
+  ssh "$PI_HOST" 'rm -f /tmp/portfolio-logs.tgz' 2>/dev/null
+
+  echo "saved: $dest/logs-$stamp.tgz  ($(du -h "$dest/logs-$stamp.tgz" | cut -f1))"
+  echo "kept:  $(ls -1 "$dest"/logs-*.tgz 2>/dev/null | wc -l | tr -d ' ') backup(s)"
+}
 
 # Push local work to the staging site.
 # Optional argument becomes the commit message.

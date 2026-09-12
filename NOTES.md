@@ -344,3 +344,132 @@ delete the comma on the final line.
 
 Kinds: `doc` (cyan), `code` (green), `model` (amber), `data` (violet),
 `archive` (slate). Unknown extensions fall back to `doc` and still work.
+
+---
+
+## Analytics — how it actually works
+
+Two independent data sources, combined into one page. Knowing which is
+which explains every number on the stats site.
+
+### 1. Server logs — what was requested
+
+nginx writes a line per request to `/var/log/nginx/portfolio.access.log`.
+Sees everything, including bots. Cannot see anything that happens
+*inside* a page.
+
+- IPs are truncated to `/24` **before writing** (`pi/nginx-log-anon.conf`,
+  installed to `/etc/nginx/conf.d/log-anon.conf`). Full addresses never
+  touch the SD card, so there is nothing sensitive to lose.
+- `access_log ... anonymized;` in `sites-available/default` selects that
+  format. Without the `anonymized` keyword it silently logs full IPs.
+- GoAccess parses it into both HTML and JSON in one pass.
+
+### 2. Beacon events — what people did
+
+`assets/js/analytics.js` runs on every page and pings `/e`. nginx logs
+those to `/var/log/nginx/events.log` via `location = /e` in
+`pi/harden.conf`. **No server process, no database** — nginx receiving a
+request and writing a line is the whole mechanism.
+
+Tab-separated, 11 fields:
+
+```
+time  host  ip  type  path  referrer  session  depth  dwell  label  user-agent
+```
+
+- `type` is `view`, `end`, or `click`. `end` fires on tab hide and
+  carries scroll depth (%) and dwell (seconds).
+- `label` carries the campaign tag on `view` events and the click target
+  on `click` events.
+- Values are URL-encoded. Empty fields log as `-`.
+- Session id lives in `sessionStorage`, so it dies with the tab.
+
+**Key property:** events only exist if a browser ran JavaScript, and
+almost no crawler does. So events are humans by construction, which is
+why the headline numbers come from here and GoAccess totals are demoted
+to a footnote.
+
+### The pipeline
+
+```
+cron (*/5)  ->  stats-refresh  ->  goaccess  ->  HTML + JSON
+                                -> stats-summary(JSON, events.log)
+                                -> /var/www/stats/index.html    (summary)
+                                   /var/www/stats/dashboard.html (GoAccess)
+```
+
+Served on `127.0.0.1:8082` — **loopback only**, so the only route in is
+the Cloudflare tunnel, behind Access. Even with the Access policy
+deleted, nothing on the LAN can reach it.
+
+`stats-refresh` exits immediately if neither log changed since the last
+successful run, which is what makes a 5-minute interval cheap. Use
+`--force` to override.
+
+### Retention
+
+`rotate 260` (weeks) in `/etc/logrotate.d/nginx` = 5 years, and that one
+number *is* the report window — the report is rebuilt from whatever logs
+still exist, so they cannot drift apart. `--keep-last` in
+`stats-refresh.sh` is a safety net that should be set to match.
+
+### Campaign tags
+
+Put `?from=resume` on the link in the resume, `?from=linkedin` on the
+profile, `?from=card` on a QR code. The tag is stored for the whole
+session (so a download on page three is still credited to the resume)
+and stripped from the address bar so visitors never see it.
+
+Most real visits arrive with **no referrer at all** — texts, QR codes,
+PDFs and many apps strip it — so tagging is the only reliable way to
+know which channel works.
+
+### Leaving yourself out
+
+Visit `/?me=1` once per browser. Everything that browser sends is then
+prefixed `x-` on the session id and discarded by the parser. `/?me=0`
+undoes it.
+
+Do **not** use `stats-exclude me` (the IP-based tool) from the
+apartment: Velocity NATs the whole building behind one address, and
+`/24` exclusion would silently delete any neighbour who visits. Same
+reasoning applies on campus wifi, harder.
+
+### Gotchas found the hard way
+
+- GoAccess JSON dates are `20260818`, **not** the `18/Aug/2026` shown in
+  the HTML. Getting this wrong is silent: totals stay right while every
+  per-day number reads zero.
+- GoAccess picks output format from the **file extension**. A temp file
+  named `.tmp.1234` fails with "Invalid filename extension".
+- The Referrers panel is **off by default**; it needs
+  `--enable-panel=REFERRERS`.
+- Cities live on the **hosts** panel, not the geolocation panel, which
+  only ever goes down to country.
+- `access_log` inside `location = /e` **replaces** the inherited one.
+  Without that line every beacon would also count as a page view.
+- Chrome copies `sessionStorage` into a tab opened from a link, so one
+  session can legitimately show two `view` events with no `end` between.
+
+### Files
+
+| File | Installs to |
+|---|---|
+| `pi/harden.conf` | `/etc/nginx/snippets/harden.conf` |
+| `pi/nginx-log-anon.conf` | `/etc/nginx/conf.d/log-anon.conf` |
+| `pi/nginx-stats.conf` | `/etc/nginx/sites-available/stats` |
+| `pi/logrotate-nginx` | `/etc/logrotate.d/nginx` |
+| `pi/stats-refresh.sh` | `/usr/local/bin/stats-refresh` |
+| `pi/stats-summary.py` | `/usr/local/bin/stats-summary` |
+| `pi/stats-exclude.sh` | `/usr/local/bin/stats-exclude` |
+| `assets/js/analytics.js` | served from the site |
+
+Full setup steps: `pi/STATS-SETUP.md`.
+
+### Backups
+
+`backup-logs` (in `pi/portfolio.zsh`) pulls the logs to
+`~/Documents/portfolio-logs`. Pull rather than push, so the pi holds no
+credentials and a compromised pi cannot reach the backups. The logs are
+the only thing on the pi that git cannot restore.
