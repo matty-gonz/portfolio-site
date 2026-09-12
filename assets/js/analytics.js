@@ -60,6 +60,19 @@
     // Remember it for the rest of the visit, so a click on page three
     // is still attributable to the resume link that started it.
     try { if (campaign) sessionStorage.setItem('_c', campaign); } catch (e) {}
+
+    // Now take it out of the address bar. It has already been captured
+    // and stored, so nothing is lost — but a recruiter who glances at
+    // the URL sees a clean matthewjgonzalez.me rather than something
+    // that looks like it is tracking them. replaceState edits the
+    // current history entry, so the back button still behaves.
+    try {
+      if (history.replaceState) {
+        var clean = location.search.replace(/([?&])from=[^&]*&?/, '$1')
+                                   .replace(/[?&]$/, '');
+        history.replaceState(null, '', location.pathname + clean + location.hash);
+      }
+    } catch (e) { /* older browser: harmless, tag just stays visible */ }
   } else {
     try { campaign = sessionStorage.getItem('_c') || ''; } catch (e) {}
   }
