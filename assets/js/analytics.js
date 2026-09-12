@@ -39,8 +39,30 @@
   if (!navigator.sendBeacon) return;          // pre-2015 browsers: skip
 
   var ENDPOINT = '/e';
+
+  // Keep only the query parameter that identifies WHICH project. Every
+  // other parameter is dropped, so nothing accidental ends up in a log.
   var path = location.pathname + (location.search.indexOf('id=') > -1
       ? '?' + (location.search.match(/id=[^&]*/) || [''])[0] : '');
+
+  // Campaign tag. Put ?from=resume on the link in your resume,
+  // ?from=linkedin on your profile, ?from=card on a QR code, and so on.
+  // Most real traffic arrives with no referrer at all — texts, QR codes,
+  // PDFs and many apps strip it — so this is the only reliable way to
+  // know which channel actually works.
+  //
+  // It rides in the `l` field, which is unused on view events, so no
+  // nginx log format change is needed.
+  var campaign = '';
+  var fm = location.search.match(/[?&]from=([^&]{1,40})/);
+  if (fm) {
+    campaign = 'from:' + decodeURIComponent(fm[1]).replace(/[^\w.-]/g, '');
+    // Remember it for the rest of the visit, so a click on page three
+    // is still attributable to the resume link that started it.
+    try { if (campaign) sessionStorage.setItem('_c', campaign); } catch (e) {}
+  } else {
+    try { campaign = sessionStorage.getItem('_c') || ''; } catch (e) {}
+  }
 
   // ── session id ──────────────────────────────────────────────────
   // sessionStorage, not a cookie and not localStorage: it is cleared
@@ -79,7 +101,7 @@
   }
 
   // ── page view ───────────────────────────────────────────────────
-  send({ t: 'view', r: ref });
+  send({ t: 'view', r: ref, l: campaign });
 
   // ── scroll depth ────────────────────────────────────────────────
   // The single most useful signal for a portfolio: it separates

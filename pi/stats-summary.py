@@ -26,17 +26,20 @@ never a traceback that costs you the whole page.
 """
 
 import json
+import os
 import sys
 import html
 from datetime import datetime, timedelta
 
 # ── input ────────────────────────────────────────────────────────────
 
-if len(sys.argv) not in (3, 4):
-    sys.exit("usage: stats-summary <input.json> <output.html> [dashboard.html]")
+if len(sys.argv) not in (3, 4, 5):
+    sys.exit("usage: stats-summary <input.json> <output.html> "
+             "[dashboard.html] [events.log]")
 
 SRC, DEST = sys.argv[1], sys.argv[2]
-DASH = sys.argv[3] if len(sys.argv) == 4 else None
+DASH = sys.argv[3] if len(sys.argv) >= 4 else None
+EVENTS = sys.argv[5 - 1] if len(sys.argv) == 5 else "/var/log/nginx/events.log"
 
 try:
     with open(SRC, encoding="utf-8", errors="replace") as fh:
@@ -66,6 +69,11 @@ def count(row, key):
 
 
 GEN = D.get("general", {}) if isinstance(D.get("general"), dict) else {}
+
+# Defined once, here, because both the event windows and the heatmap
+# need it — and they need the SAME value. Two calls to now() straddling
+# midnight would put them in different days.
+_now = datetime.now().astimezone()
 
 # ── visitors over time ───────────────────────────────────────────────
 # The visitors panel is one row per day, "data" holding a date string.
@@ -267,24 +275,201 @@ cities = sorted(cities.items(), key=lambda kv: kv[1], reverse=True)[:6]
 # prefix, so tidy those too.
 places = [(tidy_place(str(name)), val) for name, val in places]
 
+# ── behaviour events ─────────────────────────────────────────────────
+# events.log is written by nginx from the /e beacon (assets/js/analytics.js).
+#
+# The important property: these events only exist if a browser ran
+# JavaScript. Almost no crawler does. So where the access log needs
+# guesswork to separate people from bots, this file is people by
+# construction — which is why the headline numbers below come from here
+# and not from GoAccess.
+
+EV_FIELDS = 11
+
+
+def unq(v):
+    if v in ("", "-", None):
+        return ""
+    try:
+        from urllib.parse import unquote
+        return unquote(v)
+    except Exception:                          # noqa: BLE001
+        return v
+
+
+def parse_ts(raw):
+    try:
+        return datetime.fromisoformat(raw)
+    except ValueError:
+        for fmt in ("%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%dT%H:%M:%S"):
+            try:
+                return datetime.strptime(raw, fmt)
+            except ValueError:
+                continue
+    return None
+
+
+sessions = {}
+ev_count = 0
+
+if EVENTS and os.path.exists(EVENTS):
+    try:
+        with open(EVENTS, encoding="utf-8", errors="replace") as fh:
+            for line in fh:
+                parts = line.rstrip("\n").split("\t")
+                if len(parts) < EV_FIELDS:
+                    continue
+                ts, host, ip, typ, path_, ref_, sid, dep, dwl, lab, ua = parts[:EV_FIELDS]
+
+                # Staging traffic is your own testing. Counting it would
+                # mean every experiment inflates your real numbers.
+                if host.startswith("dev.") or host.startswith("staging."):
+                    continue
+
+                when = parse_ts(ts)
+                if not when or not sid or sid == "-":
+                    continue
+
+                ev_count += 1
+                s = sessions.setdefault(sid, {
+                    "first": when, "last": when, "pages": {},
+                    "clicks": [], "campaign": "", "ref": "", "ua": ua,
+                })
+                s["first"] = min(s["first"], when)
+                s["last"] = max(s["last"], when)
+
+                p = unq(path_) or "/"
+                lab = unq(lab)
+
+                if typ == "view":
+                    s["pages"].setdefault(p, {"depth": 0, "dwell": 0})
+                    if ref_ not in ("", "-"):
+                        s["ref"] = s["ref"] or unq(ref_)
+                    if lab.startswith("from:"):
+                        s["campaign"] = s["campaign"] or lab[5:]
+                elif typ == "end":
+                    rec = s["pages"].setdefault(p, {"depth": 0, "dwell": 0})
+                    try:
+                        rec["depth"] = max(rec["depth"], int(dep))
+                    except (TypeError, ValueError):
+                        pass
+                    try:
+                        rec["dwell"] = max(rec["dwell"], int(dwl))
+                    except (TypeError, ValueError):
+                        pass
+                elif typ == "click" and lab:
+                    s["clicks"].append(lab)
+    except Exception as exc:                   # noqa: BLE001
+        print(f"warning: could not read {EVENTS}: {exc}", file=sys.stderr)
+
+
+def sess_in(days_back, span=7):
+    """Sessions whose visit started in a window `days_back` weeks ago."""
+    if not sessions:
+        return []
+    end = _now - timedelta(days=days_back)
+    start = end - timedelta(days=span)
+    return [s for s in sessions.values() if start < s["first"] <= end]
+
+
+this_week = sess_in(0)
+last_week = sess_in(7)
+
+# "Engaged" = got past a glance. Either read something for 10+ seconds
+# or scrolled at least halfway down a page. Deliberately generous: the
+# point is to separate real reading from an accidental click, not to
+# set a high bar.
+def engaged(s):
+    return any(p["dwell"] >= 10 or p["depth"] >= 50 for p in s["pages"].values())
+
+
+eng_week = [s for s in this_week if engaged(s)]
+
+# ── funnel ───────────────────────────────────────────────────────────
+# The question underneath your whole site: do people get past the
+# front page, and does anyone end up trying to contact you.
+def opened_project(s):
+    return any("project.html" in p for p in s["pages"]) or \
+           any(c.startswith("project:") for c in s["clicks"])
+
+
+def reached_out(s):
+    return any(c in ("email", "linkedin", "github") or c.startswith("download:")
+               for c in s["clicks"]) or any("contact" in p for p in s["pages"])
+
+
+all_sess = list(sessions.values())
+funnel = [
+    ("Arrived",              len(all_sess)),
+    ("Read something",       sum(1 for s in all_sess if engaged(s))),
+    ("Opened a project",     sum(1 for s in all_sess if opened_project(s))),
+    ("Clicked contact/file", sum(1 for s in all_sess if reached_out(s))),
+]
+
+# ── per-page engagement ──────────────────────────────────────────────
+page_eng = {}
+for s in all_sess:
+    for p, rec in s["pages"].items():
+        e = page_eng.setdefault(prettify(p), {"n": 0, "dwell": [], "depth": []})
+        e["n"] += 1
+        if rec["dwell"]:
+            e["dwell"].append(rec["dwell"])
+        if rec["depth"]:
+            e["depth"].append(rec["depth"])
+
+# ── clicks, campaigns, real referrers ────────────────────────────────
+clicks, downloads, campaigns, ev_refs = {}, {}, {}, {}
+for s in all_sess:
+    for c in s["clicks"]:
+        if c.startswith("download:"):
+            downloads[c[9:]] = downloads.get(c[9:], 0) + 1
+        elif c.startswith("project:"):
+            continue                            # already in page stats
+        else:
+            clicks[c] = clicks.get(c, 0) + 1
+    if s["campaign"]:
+        campaigns[s["campaign"]] = campaigns.get(s["campaign"], 0) + 1
+    if s["ref"]:
+        ev_refs[s["ref"]] = ev_refs.get(s["ref"], 0) + 1
+
+HAS_EVENTS = bool(sessions)
+
+
 # ── headline sentence ────────────────────────────────────────────────
 
 def plural(n, one, many=None):
     return one if n == 1 else (many or one + "s")
 
 
-if v7:
+if HAS_EVENTS:
+    n = len(this_week)
+    lead = (f"{n} {plural(n, 'person', 'people')} visited this week."
+            if n else "Nobody visited this week.")
+    bits = []
+    prev = len(last_week)
+    if prev or n:
+        if prev == 0:
+            bits.append("Nothing to compare against last week yet.")
+        else:
+            change = round((n - prev) / prev * 100)
+            word = "up" if change > 0 else ("down" if change < 0 else "level")
+            bits.append(f"That's {word}"
+                        + (f" {abs(change)}%" if change else "")
+                        + f" on last week's {prev}.")
+    if eng_week:
+        bits.append(f"{len(eng_week)} of them actually read something.")
+elif v7:
     lead = f"{v7} {plural(v7, 'person', 'people')} visited in the last 7 days."
-elif unique_visitors:
-    lead = "No visits in the last 7 days."
+    bits = []
 else:
     lead = "No visits recorded yet."
+    bits = []
 
-bits = []
-if refs:
-    bits.append(f"Most arrivals came from {html.escape(refs[0][0])}.")
-if pages:
-    bits.append(f"{html.escape(pages[0][0])} was the most viewed page.")
+if not HAS_EVENTS:
+    if refs:
+        bits.append(f"Most arrivals came from {html.escape(refs[0][0])}.")
+    if pages:
+        bits.append(f"{html.escape(pages[0][0])} was the most viewed page.")
 lead_extra = " ".join(bits)
 
 E = html.escape
@@ -293,7 +478,6 @@ E = html.escape
 # configured timezone (set to America/New_York in step 3), so %Z prints
 # EDT or EST correctly and follows daylight saving without help.
 # %-I / %-d strip leading zeros — glibc extensions, fine on the pi.
-_now = datetime.now().astimezone()
 try:
     generated = _now.strftime("%A %-d %B %Y at %-I:%M %p %Z").strip()
 except ValueError:                     # non-glibc strftime
@@ -396,6 +580,107 @@ def rows_html(items, empty):
     return '<ul class="rank">' + "".join(out) + "</ul>"
 
 
+# ── engagement blocks (only when beacon data exists) ─────────────────
+
+def funnel_html():
+    if not HAS_EVENTS or not funnel[0][1]:
+        return ""
+    top = funnel[0][1] or 1
+    rows = []
+    for i, (label, n) in enumerate(funnel):
+        pct = round(n / top * 100)
+        drop = ""
+        if i:
+            prev_n = funnel[i - 1][1]
+            if prev_n:
+                drop = f"{round(n / prev_n * 100)}% of previous step"
+        rows.append(
+            f'<li><span class="bar" style="width:{max(pct, 2)}%"></span>'
+            f'<span class="lbl">{E(label)}</span>'
+            f'<span class="pct">{drop}</span>'
+            f'<span class="val">{n}</span></li>'
+        )
+    return ('<h2>What visitors actually did</h2>'
+            '<ul class="rank funnel">' + "".join(rows) + '</ul>'
+            '<p class="hint">Every visit that ran the page script. '
+            '"Read something" means 10+ seconds on a page or scrolled at '
+            'least halfway.</p>')
+
+
+def pages_engagement_html():
+    if not HAS_EVENTS or not page_eng:
+        return ""
+    ranked = sorted(page_eng.items(), key=lambda kv: kv[1]["n"], reverse=True)[:8]
+    top = ranked[0][1]["n"] or 1
+    rows = []
+    for name, e in ranked:
+        avg_d = round(sum(e["dwell"]) / len(e["dwell"])) if e["dwell"] else 0
+        avg_s = round(sum(e["depth"]) / len(e["depth"])) if e["depth"] else 0
+        detail = []
+        if avg_d:
+            detail.append(f"{avg_d}s avg")
+        if avg_s:
+            detail.append(f"{avg_s}% scrolled")
+        rows.append(
+            f'<li><span class="bar" style="width:{max(round(e["n"]/top*100), 2)}%"></span>'
+            f'<span class="lbl">{E(name)}</span>'
+            f'<span class="pct">{E(" · ".join(detail))}</span>'
+            f'<span class="val">{e["n"]}</span></li>'
+        )
+    return ('<h2>Pages — visits, time spent, how far down</h2>'
+            '<ul class="rank">' + "".join(rows) + '</ul>')
+
+
+def signal_html():
+    if not HAS_EVENTS:
+        return ""
+    items = []
+    NICE = {"email": "Clicked your email", "linkedin": "Clicked LinkedIn",
+            "github": "Clicked GitHub", "viewer": "Opened a file in the viewer"}
+    for k, v in sorted(clicks.items(), key=lambda kv: kv[1], reverse=True):
+        items.append((NICE.get(k, k), v))
+    for k, v in sorted(downloads.items(), key=lambda kv: kv[1], reverse=True):
+        items.append((f"Downloaded {k}", v))
+    if not items:
+        return ('<h2>High-signal actions</h2>'
+                '<p class="empty">No downloads or contact clicks yet. '
+                'One of these is worth more than fifty home page views.</p>')
+    return '<h2>High-signal actions</h2>' + rows_html(items, "")
+
+
+def campaign_html():
+    if not HAS_EVENTS:
+        return ""
+    if not campaigns:
+        return ('<h2>Tagged links</h2><p class="hint">Add <code>?from=resume</code> '
+                'to the link on your resume, <code>?from=linkedin</code> to your '
+                'profile, <code>?from=card</code> to a QR code. Most visits arrive '
+                'with no referrer at all, so tagging is the only reliable way to '
+                'know which channel works.</p>')
+    return '<h2>Tagged links</h2>' + rows_html(
+        sorted(campaigns.items(), key=lambda kv: kv[1], reverse=True)[:8], "")
+
+
+ENGAGE_HTML = (funnel_html() + pages_engagement_html()
+               + signal_html() + campaign_html())
+
+# When the beacon is live it supersedes the log-derived page list, which
+# counts bots and can't measure anything that happens inside a page.
+PAGES_HTML = "" if (HAS_EVENTS and page_eng) else (
+    "<h2>Most viewed pages</h2>" + rows_html(pages, "No page views recorded yet."))
+
+REF_SOURCE = sorted(ev_refs.items(), key=lambda kv: kv[1], reverse=True)[:6] \
+    if (HAS_EVENTS and ev_refs) else refs
+
+BOT_NOTE = ""
+if HAS_EVENTS and total_requests:
+    real = len(all_sess)
+    BOT_NOTE = (f'<p class="hint">GoAccess logged {total_requests:,} requests and '
+                f'{valid_requests:,} after stripping self-identified crawlers. '
+                f'The beacon counted {real} real {plural(real, "visit")} — only a '
+                f'browser running JavaScript can produce those, which is why this '
+                f'number is the trustworthy one.</p>')
+
 HTML = f"""<!DOCTYPE html>
 <html lang="en"><head>
 <meta charset="utf-8">
@@ -449,6 +734,13 @@ HTML = f"""<!DOCTYPE html>
   .val {{ position:relative; font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
           font-size:0.78rem; color:var(--accent); padding-left:1rem; }}
   .empty {{ color:var(--dim); font-size:0.85rem; font-style:italic; margin:0; }}
+  .hint {{ color:var(--dim); font-size:0.72rem; line-height:1.6; margin:0.6rem 0 0; }}
+  .hint code {{ font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+                color:var(--accent); font-size:0.92em; }}
+  .pct {{ position:relative; font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+          font-size:0.62rem; color:var(--dim); padding-left:0.9rem;
+          white-space:nowrap; }}
+  .funnel li {{ font-size:0.9rem; }}
 
   /* Calendar heatmap. grid-auto-flow:column fills top-to-bottom then
      left-to-right, so each column is one Sun..Sat week. */
@@ -497,26 +789,32 @@ HTML = f"""<!DOCTYPE html>
   <p class="sub">{lead_extra or "Referrer and page data will appear as visits accumulate."}</p>
 
   <div class="cards">
-    <div class="card"><div class="n">{v7}</div><div class="k">Last 7 days</div>
-      <div class="note">{h7} page views</div></div>
-    <div class="card"><div class="n">{v30}</div><div class="k">Last 30 days</div>
-      <div class="note">{h30} page views</div></div>
-    <div class="card"><div class="n">{unique_visitors}</div><div class="k">All time</div>
-      <div class="note">{valid_requests} page views</div></div>
+    <div class="card"><div class="n">{len(this_week) if HAS_EVENTS else v7}</div>
+      <div class="k">This week</div>
+      <div class="note">{"real visits" if HAS_EVENTS else f"{h7} page views"}</div></div>
+    <div class="card"><div class="n">{len(last_week) if HAS_EVENTS else v30}</div>
+      <div class="k">{"Week before" if HAS_EVENTS else "Last 30 days"}</div>
+      <div class="note">{"real visits" if HAS_EVENTS else f"{h30} page views"}</div></div>
+    <div class="card"><div class="n">{len(eng_week) if HAS_EVENTS else unique_visitors}</div>
+      <div class="k">{"Read something" if HAS_EVENTS else "All time"}</div>
+      <div class="note">{"this week" if HAS_EVENTS else f"{valid_requests} page views"}</div></div>
     <div class="card"><div class="n">{bot_pct}%</div><div class="k">Was bots</div>
-      <div class="note">{bot_hits} of {total_requests} hits, excluded</div></div>
+      <div class="note">{bot_hits:,} of {total_requests:,} hits, excluded</div></div>
   </div>
+
+  {BOT_NOTE}
 
   <h2>Visits per day</h2>
   {heatmap_html(days)}
 
+  {ENGAGE_HTML}
+
   {hours_html()}
 
-  <h2>Most viewed pages</h2>
-  {rows_html(pages, "No page views recorded yet.")}
+  {PAGES_HTML}
 
   <h2>Where visitors came from</h2>
-  {rows_html(refs, "No external referrers yet — visits so far were direct.")}
+  {rows_html(REF_SOURCE, "No external referrers yet — visits so far were direct.")}
 
   <h2>Countries</h2>
   {rows_html(places, "No location data. Add the GeoLite2 database to enable this.")}

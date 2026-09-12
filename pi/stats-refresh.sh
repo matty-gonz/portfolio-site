@@ -68,8 +68,14 @@ fi
 # Signature = number of log files (catches a rotation) + size and mtime
 # of the live log (catches new requests). Pass --force to override.
 STAMP="/var/lib/stats-refresh.stamp"
+EVENTS_LOG="/var/log/nginx/events.log"
 live="${LOGS[-1]}"
+
+# The signature must cover the beacon log too. Without it, a visitor who
+# scrolled and clicked but triggered no new access-log line would leave
+# the page stale — the engagement numbers would silently lag.
 SIG="${#LOGS[@]}:$(stat -c '%s:%Y' "$live" 2>/dev/null || echo 0)"
+SIG="$SIG:$(stat -c '%s:%Y' "$EVENTS_LOG" 2>/dev/null || echo 0)"
 
 if [ "${1:-}" != "--force" ] \
    && [ -f "$STAMP" ] && [ -s "$OUT" ] && [ -s "$DASH" ] \
@@ -200,7 +206,7 @@ install_file() {   # $1 = temp file, $2 = destination
 # shouldn't cost you the report that was working a second ago.
 SUMMARY_OK=0
 if [ -s "$TMP_JSON" ] && [ -x "$SUMMARY_BIN" ]; then
-    if "$SUMMARY_BIN" "$TMP_JSON" "$TMP_SUM" "$TMP_HTML" 2>&1 \
+    if "$SUMMARY_BIN" "$TMP_JSON" "$TMP_SUM" "$TMP_HTML" "$EVENTS_LOG" 2>&1 \
          | sed 's/^/[summary] /' >&2; then
         [ -s "$TMP_SUM" ] && SUMMARY_OK=1
     else
