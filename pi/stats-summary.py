@@ -313,9 +313,34 @@ sessions = {}
 ev_count = 0
 excluded_events = 0
 
-if EVENTS and os.path.exists(EVENTS):
+def event_files(base):
+    """Current log plus every rotated one.
+
+    logrotate renames events.log -> events.log.1 -> events.log.2.gz
+    weekly. Reading only the live file therefore loses everything older
+    than the last rotation — which silently breaks any week-over-week
+    comparison, because 'last week' is exactly what just got rotated
+    away. Highest number is oldest, so reverse version order is
+    chronological.
+    """
+    import glob
+    found = glob.glob(base + "*")
+    return sorted(found, reverse=True)
+
+
+def open_event_file(path):
+    if path.endswith(".gz"):
+        import gzip
+        return gzip.open(path, "rt", encoding="utf-8", errors="replace")
+    return open(path, encoding="utf-8", errors="replace")
+
+
+ev_files = event_files(EVENTS) if EVENTS else []
+
+if ev_files:
     try:
-        with open(EVENTS, encoding="utf-8", errors="replace") as fh:
+        for _path in ev_files:
+          with open_event_file(_path) as fh:
             for line in fh:
                 parts = line.rstrip("\n").split("\t")
                 if len(parts) < EV_FIELDS:

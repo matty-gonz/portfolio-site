@@ -451,6 +451,12 @@ reasoning applies on campus wifi, harder.
   Without that line every beacon would also count as a page view.
 - Chrome copies `sessionStorage` into a tab opened from a link, so one
   session can legitimately show two `view` events with no `end` between.
+- `events.log` **rotates weekly like any other log**. The parser must
+  glob `events.log*` and gunzip the `.gz` ones, exactly as the access-log
+  side does. Reading only the live file loses last week — which breaks
+  week-over-week comparison specifically, since "last week" is precisely
+  what just got rotated away. The symptom is "Nothing to compare against
+  last week yet" while the data plainly exists.
 
 ### Files
 
